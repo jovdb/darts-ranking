@@ -1,0 +1,82 @@
+.player-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.field-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.text-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(17, 37, 60, 0.18);
+  border-radius: 0.9rem;
+  background-color: var(--surface-strong);
+  color: var(--text-color);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.text-input::placeholder {
+  color: #7e8ea0;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: rgba(180, 90, 34, 0.55);
+  box-shadow: 0 0 0 4px rgba(180, 90, 34, 0.14);
+  transform: translateY(-1px);
+}
+
+.primary-button {
+  width: fit-content;
+  min-width: 9rem;
+  padding: 0.85rem 1.2rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #cd7441 0%, var(--accent-color) 100%);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(180, 90, 34, 0.22);
+}
+
+.primary-button:hover {
+  background: linear-gradient(
+    180deg,
+    #bc6634 0%,
+    var(--accent-color-strong) 100%
+  );
+}
+
+.primary-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: 2px;
+}
+
+.form-message {
+  min-height: 1.25rem;
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted-color);
+}
+
+.form-message.is-error {
+  color: #a61b1b;
+}
+
+.form-message.is-hidden {
+  visibility: hidden;
+}
+
+@media (max-width: 640px) {
+  .primary-button {
+    width: 100%;
+  }
+}

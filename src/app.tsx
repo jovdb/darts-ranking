@@ -8,7 +8,7 @@ import {
 
 import { AddMatchForm } from "~/components/AddMatchForm";
 import { AddPlayerForm } from "~/components/AddPlayerForm";
-import { PlayerList } from "~/components/PlayerList";
+import { RankingList } from "~/components/RankingList";
 import { calculateRankings } from "~/services/ranking";
 import { createLocalAppStorage } from "~/services/storage";
 import { createEmptyAppState, type AppState } from "~/types/app-state";
@@ -212,7 +212,7 @@ export default function App() {
                 {playedMatches().length === 1 ? "" : "es"}
               </span>
             </div>
-            <PlayerList rankings={rankings()} />
+            <RankingList rankings={rankings()} />
           </section>
         </div>
       </section>

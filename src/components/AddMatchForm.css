@@ -1,0 +1,134 @@
+.match-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.match-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.field-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.select-input {
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(17, 37, 60, 0.18);
+  border-radius: 0.9rem;
+  background-color: var(--surface-strong);
+  color: var(--text-color);
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: rgba(180, 90, 34, 0.55);
+  box-shadow: 0 0 0 4px rgba(180, 90, 34, 0.14);
+}
+
+.select-input:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: 2px;
+}
+
+.winner-options {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.winner-options legend {
+  padding: 0;
+}
+
+.winner-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(17, 37, 60, 0.12);
+  border-radius: 0.9rem;
+  background-color: rgba(255, 255, 255, 0.66);
+  cursor: pointer;
+}
+
+.winner-choice.is-selected {
+  border-color: rgba(180, 90, 34, 0.45);
+  box-shadow: 0 0 0 3px rgba(180, 90, 34, 0.1);
+}
+
+.winner-choice input {
+  margin: 0;
+}
+
+.winner-choice-details {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.winner-choice-name {
+  font-weight: 700;
+}
+
+.winner-choice-points {
+  color: var(--accent-color-strong);
+  font-size: 0.92rem;
+}
+
+.primary-button {
+  width: fit-content;
+  min-width: 9rem;
+  padding: 0.85rem 1.2rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #cd7441 0%, var(--accent-color) 100%);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(180, 90, 34, 0.22);
+}
+
+.primary-button:hover {
+  background: linear-gradient(
+    180deg,
+    #bc6634 0%,
+    var(--accent-color-strong) 100%
+  );
+}
+
+.primary-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: 2px;
+}
+
+.form-message {
+  min-height: 1.25rem;
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted-color);
+}
+
+.form-message.is-error {
+  color: #a61b1b;
+}
+
+.form-message.is-hidden {
+  visibility: hidden;
+}
+
+@media (max-width: 640px) {
+  .primary-button {
+    width: 100%;
+  }
+}

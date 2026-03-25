@@ -2,37 +2,37 @@ import { For, Show } from "solid-js";
 
 import { formatScore, type RankedPlayer } from "~/services/ranking";
 
-type PlayerListProps = {
+import "./RankingList.css";
+
+type RankingListProps = {
   rankings: RankedPlayer[];
 };
 
-export function PlayerList(props: PlayerListProps) {
+export function RankingList(props: RankingListProps) {
   return (
     <Show
       when={props.rankings.length > 0}
       fallback={
-        <p class="empty-state">
-          No players yet. Add the first competitor to start building the roster.
+        <p class="ranking-empty-state">
+          No players yet. Add the first competitor to start.
         </p>
       }
     >
-      <ul class="player-items">
+      <ul class="ranking-list">
         <For each={props.rankings}>
           {(player) => (
-            <li class="player-list-item">
-              <span class="player-index">
-                {String(player.rank).padStart(2, "0")}
-              </span>
-              <div class="player-details">
-                <span class="player-name">{player.name}</span>
-                <span class="player-record">
+            <li class="ranking-item">
+              <span class="ranking-rank">#{player.rank}</span>
+              <div class="ranking-details">
+                <span class="ranking-name">{player.name}</span>
+                <span class="ranking-record">
                   {player.wins} win{player.wins === 1 ? "" : "s"} /{" "}
                   {player.losses} loss
                   {player.losses === 1 ? "" : "es"}
                 </span>
               </div>
-              <div class="player-metrics">
-                <span class="player-score">
+              <div class="ranking-metrics">
+                <span class="ranking-score">
                   {formatScore(player.score)} pts
                 </span>
                 <span class="difficulty-badge">L{player.difficultyLevel}</span>

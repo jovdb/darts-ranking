@@ -1,5 +1,7 @@
 import { createSignal } from "solid-js";
 
+import "./AddPlayerForm.css";
+
 type AddPlayerFormProps = {
   error?: string;
   onAddPlayer: (name: string) => boolean;

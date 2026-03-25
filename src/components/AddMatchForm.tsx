@@ -2,6 +2,8 @@ import { For, Show, createMemo, createSignal } from "solid-js";
 
 import type { RankedPlayer } from "~/services/ranking";
 
+import "./AddMatchForm.css";
+
 type AddMatchFormProps = {
   error?: string;
   onAddMatch: (

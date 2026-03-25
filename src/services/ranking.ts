@@ -1,5 +1,7 @@
 import type { PlayedMatch, Player } from "~/types/app-state";
 
+const rankingTieBreakers = new Map<string, number>();
+
 export type DifficultyLevel = 1 | 2 | 3;
 
 export type RankedPlayer = {
@@ -32,6 +34,18 @@ const average = (values: number[]) => {
 
   const total = values.reduce((sum, value) => sum + value, 0);
   return total / values.length;
+};
+
+const getRankingTieBreaker = (playerName: string) => {
+  const existingValue = rankingTieBreakers.get(playerName);
+
+  if (existingValue !== undefined) {
+    return existingValue;
+  }
+
+  const nextValue = Math.random();
+  rankingTieBreakers.set(playerName, nextValue);
+  return nextValue;
 };
 
 const buildRankingsFromProcessedMatches = (
@@ -93,22 +107,34 @@ const buildRankingsFromProcessedMatches = (
         return rightPlayer.score - leftPlayer.score;
       }
 
-      return leftPlayer.name.localeCompare(rightPlayer.name);
+      return (
+        getRankingTieBreaker(leftPlayer.name) -
+        getRankingTieBreaker(rightPlayer.name)
+      );
     });
 
-  const uniqueScoreCount = new Set(
-    rankedPlayers.map((rankedPlayer) => rankedPlayer.score),
-  ).size;
+  const playedGamesInWindow = processedMatches.length;
   const topHalfCount =
-    uniqueScoreCount >= 3 ? Math.ceil(rankedPlayers.length * 0.5) : 0;
+    playedGamesInWindow >= 5 ? Math.ceil(rankedPlayers.length * 0.5) : 0;
   const topQuarterCount =
-    uniqueScoreCount >= 5 ? Math.ceil(rankedPlayers.length * 0.25) : 0;
+    playedGamesInWindow >= 10 ? Math.ceil(rankedPlayers.length * 0.25) : 0;
 
-  return rankedPlayers.map((rankedPlayer, index) => ({
-    ...rankedPlayer,
-    difficultyLevel: index < topQuarterCount ? 3 : index < topHalfCount ? 2 : 1,
-    rank: index + 1,
-  }));
+  let previousScore: number | null = null;
+  let currentRank = 0;
+
+  return rankedPlayers.map((rankedPlayer, index) => {
+    if (previousScore === null || rankedPlayer.score !== previousScore) {
+      currentRank += 1;
+      previousScore = rankedPlayer.score;
+    }
+
+    return {
+      ...rankedPlayer,
+      difficultyLevel:
+        index < topQuarterCount ? 3 : index < topHalfCount ? 2 : 1,
+      rank: currentRank,
+    };
+  });
 };
 
 export const formatScore = (score: number) => {
