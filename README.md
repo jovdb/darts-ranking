@@ -37,8 +37,9 @@ Players get levels based on their ranking position:
 
 To use the app:
 
-1. Add players.
-2. Record matches by selecting two players and picking the winner.
-3. View the rankings and match history.
+1. Goto: https://jovdb.github.io/darts-ranking
+2. Add players.
+3. Record matches by selecting two players and picking the winner.
+4. View the rankings and match history.
 
 Enjoy your darts games!
