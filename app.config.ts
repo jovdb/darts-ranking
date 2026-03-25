@@ -4,6 +4,5 @@ export default defineConfig({
   ssr: false,
   server: {
     preset: "github-pages",
-    baseURL: "/darts-ranking/",
   },
 });
