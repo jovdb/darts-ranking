@@ -32,6 +32,8 @@ const formatPointLabel = (points: number) => {
   return `(+${points}${points === 1 ? "pt" : "pts"})`;
 };
 
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
 export function AddMatchForm(props: AddMatchFormProps) {
   const [firstPlayerName, setFirstPlayerName] = createSignal("");
   const [secondPlayerName, setSecondPlayerName] = createSignal("");
@@ -39,6 +41,31 @@ export function AddMatchForm(props: AddMatchFormProps) {
 
   const findPlayer = (name: string) => {
     return props.players.find((player) => player.name === name);
+  };
+
+  const formatSecondPlayerLabel = (player: RankedPlayer) => {
+    const firstPlayer = firstPlayerName();
+
+    if (!firstPlayer) {
+      return formatPlayerLabel(player);
+    }
+
+    const rematchRestriction = getRematchRestriction(
+      props.playedMatches,
+      firstPlayer,
+      player.name,
+    );
+
+    if (!rematchRestriction.isBlocked || !rematchRestriction.availableAt) {
+      return formatPlayerLabel(player);
+    }
+
+    const daysUntilAvailable = Math.ceil(
+      (rematchRestriction.availableAt.getTime() - Date.now()) / DAY_IN_MS,
+    );
+    const safeDaysUntilAvailable = Math.max(1, daysUntilAvailable);
+
+    return `${formatPlayerLabel(player)} (possible in ${safeDaysUntilAvailable} day${safeDaysUntilAvailable === 1 ? "" : "s"})`;
   };
 
   const syncWinner = (
@@ -164,7 +191,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
               )}
             >
               {(player) => (
-                <option value={player.name}>{formatPlayerLabel(player)}</option>
+                <option value={player.name}>{formatSecondPlayerLabel(player)}</option>
               )}
             </For>
           </select>

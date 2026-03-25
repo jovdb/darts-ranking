@@ -176,9 +176,6 @@ export default function App() {
             <div class="card-header">
               <div>
                 <h1>Smartphoto darts ranking</h1>
-                <p class="card-copy">
-                  Recorded matches: {playedMatches().length}
-                </p>
               </div>
               <span class="player-count">
                 {playedMatches().length} match

@@ -51,6 +51,7 @@ export const getRematchRestriction = (
     return {
       availableAt: null,
       isBlocked: false,
+      lastPlayedAt: null,
       message: "",
     };
   }
@@ -61,6 +62,7 @@ export const getRematchRestriction = (
     return {
       availableAt,
       isBlocked: false,
+      lastPlayedAt: latestPlayedAt,
       message: "",
     };
   }
@@ -68,6 +70,7 @@ export const getRematchRestriction = (
   return {
     availableAt,
     isBlocked: true,
-    message: `${firstPlayerName} and ${secondPlayerName} can play again on ${formatAvailabilityDate(availableAt)}.`,
+    lastPlayedAt: latestPlayedAt,
+    message: `${firstPlayerName} and ${secondPlayerName} recently played at ${formatAvailabilityDate(latestPlayedAt)}, rematch possible at ${formatAvailabilityDate(availableAt)}.`,
   };
 };

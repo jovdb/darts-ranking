@@ -15,6 +15,7 @@ This will be a Solid Start application to start darts games with opponents and c
 
 - Main part is player ranking with scores.
   - The ranking list should show actual rank numbers, not simple index numbers.
+  - Ranking numbers should be shown as large typographic numbers in each row, without a circle badge.
   - Players with the same score should share the same rank number.
   - Rank numbers should keep incrementing without gaps after ties (for example `1, 1, 2, 3`).
   - Players with the same score should be shown in a randomized order on each refresh.

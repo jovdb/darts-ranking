@@ -22,7 +22,7 @@ export function RankingList(props: RankingListProps) {
         <For each={props.rankings}>
           {(player) => (
             <li class="ranking-item">
-              <span class="ranking-rank">#{player.rank}</span>
+              <span class="ranking-rank">{player.rank}</span>
               <div class="ranking-details">
                 <span class="ranking-name">{player.name}</span>
                 <span class="ranking-record">
