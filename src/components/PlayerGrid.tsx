@@ -24,7 +24,7 @@ export function PlayerGrid(props: PlayerGridProps) {
   const [isViewingAllMatches, setIsViewingAllMatches] = createSignal(false);
   const [selectedPlayerSummary, setSelectedPlayerSummary] = createSignal<{
     playerName: string;
-    type: "losses" | "wins";
+    type: "all" | "losses" | "wins";
   } | null>(null);
 
   const winsByMatchup = createMemo(() => {
@@ -105,6 +105,13 @@ export function PlayerGrid(props: PlayerGridProps) {
     }
 
     return props.historicalMatches.filter((match) => {
+      if (summary.type === "all") {
+        return (
+          match.winningPlayer.name === summary.playerName ||
+          match.losingPlayer.name === summary.playerName
+        );
+      }
+
       if (summary.type === "wins") {
         return match.winningPlayer.name === summary.playerName;
       }
@@ -121,7 +128,7 @@ export function PlayerGrid(props: PlayerGridProps) {
 
   const openPlayerSummaryHistory = (
     playerName: string,
-    type: "losses" | "wins",
+    type: "all" | "losses" | "wins",
   ) => {
     setIsViewingAllMatches(false);
     setSelectedMatchup(null);
@@ -147,149 +154,160 @@ export function PlayerGrid(props: PlayerGridProps) {
   };
 
   return (
-    <section class="card card-wide">
-      <div class="card-header">
-        <div>
-          <h2>Player grid</h2>
-          <p class="card-copy">
-            Winners across the top, losers down the side, with each cell showing
-            recorded wins for that matchup.
-          </p>
+    <>
+      <section class="card card-wide">
+        <div class="card-header">
+          <div>
+            <h2>Player grid</h2>
+            <p class="card-copy">
+              Winners across the top, losers down the side, with each cell showing
+              recorded wins for that matchup.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <Show
-        when={props.players.length > 0}
-        fallback={
-          <p class="helper-text">
-            Add players to see the winner-versus-loser matrix.
-          </p>
-        }
-      >
-        <div class="player-grid-scroll">
-          <table class="player-grid-table">
-            <thead>
-              <tr>
-                <th class="player-grid-corner" scope="col">
-                  Loser / Winner
-                </th>
+        <Show
+          when={props.players.length > 0}
+          fallback={
+            <p class="helper-text">
+              Add players to see the winner-versus-loser matrix.
+            </p>
+          }
+        >
+          <div class="player-grid-scroll">
+            <table class="player-grid-table">
+              <thead>
+                <tr>
+                  <th class="player-grid-corner" scope="col">
+                    Loser / Winner
+                  </th>
+                  <For each={props.players}>
+                    {(player) => (
+                      <th class="player-grid-header winners" scope="col">
+                        <button
+                          class="player-grid-axis-button"
+                          type="button"
+                          onClick={() =>
+                            openPlayerSummaryHistory(player.name, "wins")
+                          }
+                        >
+                          {player.name}
+                        </button>
+                      </th>
+                    )}
+                  </For>
+                  <th class="player-grid-summary-header" scope="col">
+                    Losses
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
                 <For each={props.players}>
-                  {(player) => (
-                    <th class="player-grid-header winners" scope="col">
-                      <button
-                        class="player-grid-axis-button"
-                        type="button"
-                        onClick={() =>
-                          openPlayerSummaryHistory(player.name, "wins")
-                        }
-                      >
-                        {player.name}
-                      </button>
-                    </th>
-                  )}
-                </For>
-                <th class="player-grid-summary-header" scope="col">
-                  Losses
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <For each={props.players}>
-                {(loser) => (
-                  <tr>
-                    <th class="player-grid-row-header losers" scope="row">
-                      <button
-                        class="player-grid-axis-button"
-                        type="button"
-                        onClick={() =>
-                          openPlayerSummaryHistory(loser.name, "losses")
-                        }
-                      >
-                        {loser.name}
-                      </button>
-                    </th>
-                    <For each={props.players}>
-                      {(winner) => {
-                        const wins = () => getWins(winner.name, loser.name);
-                        const isSamePlayer = winner.name === loser.name;
+                  {(loser) => (
+                    <tr>
+                      <th class="player-grid-row-header losers" scope="row">
+                        <button
+                          class="player-grid-axis-button"
+                          type="button"
+                          onClick={() =>
+                            openPlayerSummaryHistory(loser.name, "losses")
+                          }
+                        >
+                          {loser.name}
+                        </button>
+                      </th>
+                      <For each={props.players}>
+                        {(winner) => {
+                          const wins = () => getWins(winner.name, loser.name);
+                          const isSamePlayer = winner.name === loser.name;
 
-                        return (
-                          <td
-                            class="player-grid-cell"
-                            data-empty={wins() === 0}
-                            data-self={isSamePlayer}
-                          >
-                            <Show
-                              when={!isSamePlayer}
-                              fallback={
-                                <span class="player-grid-cell-static">-</span>
-                              }
+                          return (
+                            <td
+                              class="player-grid-cell"
+                              data-empty={wins() === 0}
+                              data-self={isSamePlayer}
                             >
-                              <button
-                                class="player-grid-cell-button"
-                                type="button"
-                                onClick={() =>
-                                  openMatchupHistory(winner.name, loser.name)
+                              <Show
+                                when={!isSamePlayer}
+                                fallback={
+                                  <button
+                                    class="player-grid-cell-button"
+                                    type="button"
+                                    onClick={() =>
+                                      openPlayerSummaryHistory(winner.name, "all")
+                                    }
+                                  >
+                                    *
+                                  </button>
                                 }
                               >
-                                {wins()}
-                              </button>
-                            </Show>
-                          </td>
-                        );
-                      }}
-                    </For>
-                    <td class="player-grid-summary-cell">
-                      <button
-                        class="player-grid-summary-button"
-                        type="button"
-                        onClick={() =>
-                          openPlayerSummaryHistory(loser.name, "losses")
-                        }
-                      >
-                        {loserTotalLosses().get(loser.name) ?? 0}
-                      </button>
-                    </td>
-                  </tr>
-                )}
-              </For>
-              <tr>
-                <th
-                  class="player-grid-summary-row-header player-grid-summary-header"
-                  scope="row"
-                >
-                  Wins
-                </th>
-                <For each={props.players}>
-                  {(winner) => (
-                    <td class="player-grid-summary-cell">
-                      <button
-                        class="player-grid-summary-button"
-                        type="button"
-                        onClick={() =>
-                          openPlayerSummaryHistory(winner.name, "wins")
-                        }
-                      >
-                        {winnerTotalWins().get(winner.name) ?? 0}
-                      </button>
-                    </td>
+                                <button
+                                  class="player-grid-cell-button"
+                                  type="button"
+                                  onClick={() =>
+                                    openMatchupHistory(winner.name, loser.name)
+                                  }
+                                >
+                                  {wins()}
+                                </button>
+                              </Show>
+                            </td>
+                          );
+                        }}
+                      </For>
+                      <td class="player-grid-summary-cell">
+                        <button
+                          class="player-grid-summary-button"
+                          type="button"
+                          onClick={() =>
+                            openPlayerSummaryHistory(loser.name, "losses")
+                          }
+                        >
+                          {loserTotalLosses().get(loser.name) ?? 0}
+                        </button>
+                      </td>
+                    </tr>
                   )}
                 </For>
-                <td class="player-grid-summary-corner">
-                  <button
-                    class="player-grid-summary-button"
-                    type="button"
-                    onClick={openAllMatchesHistory}
+                <tr>
+                  <th
+                    class="player-grid-summary-row-header player-grid-summary-header"
+                    scope="row"
                   >
-                    {props.playedMatches.length}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    Wins
+                  </th>
+                  <For each={props.players}>
+                    {(winner) => (
+                      <td class="player-grid-summary-cell">
+                        <button
+                          class="player-grid-summary-button"
+                          type="button"
+                          onClick={() =>
+                            openPlayerSummaryHistory(winner.name, "wins")
+                          }
+                        >
+                          {winnerTotalWins().get(winner.name) ?? 0}
+                        </button>
+                      </td>
+                    )}
+                  </For>
+                  <td class="player-grid-summary-corner">
+                    <button
+                      class="player-grid-summary-button"
+                      type="button"
+                      onClick={openAllMatchesHistory}
+                    >
+                      {props.playedMatches.length}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Show>
+      </section>
 
-        <Show when={isViewingAllMatches()}>
+      <Show when={isViewingAllMatches()}>
           <div
             class="popup-backdrop"
             role="presentation"
@@ -335,9 +353,9 @@ export function PlayerGrid(props: PlayerGridProps) {
               </div>
             </section>
           </div>
-        </Show>
+      </Show>
 
-        <Show when={selectedMatchup() !== null}>
+      <Show when={selectedMatchup() !== null}>
           <div
             class="popup-backdrop"
             role="presentation"
@@ -389,9 +407,9 @@ export function PlayerGrid(props: PlayerGridProps) {
               </div>
             </section>
           </div>
-        </Show>
+      </Show>
 
-        <Show when={selectedPlayerSummary() !== null}>
+      <Show when={selectedPlayerSummary() !== null}>
           <div
             class="popup-backdrop"
             role="presentation"
@@ -408,12 +426,16 @@ export function PlayerGrid(props: PlayerGridProps) {
                 <div>
                   <h2 id="player-summary-history-title">
                     {selectedPlayerSummary()?.playerName}{" "}
-                    {selectedPlayerSummary()?.type}
+                    {selectedPlayerSummary()?.type === "all"
+                      ? "matches"
+                      : selectedPlayerSummary()?.type}
                   </h2>
                   <p class="card-copy">
-                    Full list of recorded {selectedPlayerSummary()?.type} for{" "}
-                    {selectedPlayerSummary()?.playerName}, from recent to
-                    oldest.
+                    Full list of recorded{" "}
+                    {selectedPlayerSummary()?.type === "all"
+                      ? "matches"
+                      : selectedPlayerSummary()?.type} for{" "}
+                    {selectedPlayerSummary()?.playerName}, from recent to oldest.
                   </p>
                 </div>
               </div>
@@ -422,7 +444,10 @@ export function PlayerGrid(props: PlayerGridProps) {
                 when={selectedPlayerSummaryHistory().length > 0}
                 fallback={
                   <p class="helper-text">
-                    No {selectedPlayerSummary()?.type} have been recorded for{" "}
+                    No{" "}
+                    {selectedPlayerSummary()?.type === "all"
+                      ? "matches"
+                      : selectedPlayerSummary()?.type} have been recorded for{" "}
                     {selectedPlayerSummary()?.playerName} yet.
                   </p>
                 }
@@ -450,8 +475,7 @@ export function PlayerGrid(props: PlayerGridProps) {
               </div>
             </section>
           </div>
-        </Show>
       </Show>
-    </section>
+    </>
   );
 }

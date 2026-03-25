@@ -19,6 +19,9 @@ This will be a Solid Start application to start darts games with opponents and c
   - The player grid should include a last row with total wins per winner and a last column with total losses per loser.
   - The first player-name column should use a reddish background and the first player-name row should use a greenish background.
   - Clicking a player-grid cell should open a popup with the recorded matches for that winner/loser pairing, using the same match row UI as the other match-history popups.
+  - Clicking a same-player cell in the player grid should open a popup with all matches for that player.
+  - Clicking a player name in the first player-grid column should open the same popup as that player's losses total.
+  - Clicking a player name in the top player-grid row should open the same popup as that player's wins total.
   - Clicking a player-grid total in the last losses column should open a popup with all losses for that player.
   - Clicking a player-grid total in the last wins row should open a popup with all wins for that player.
   - Clicking the bottom-right player-grid total should open a popup with all matches, using the same UI as the match-count popup.
@@ -26,6 +29,7 @@ This will be a Solid Start application to start darts games with opponents and c
   - The played matches list should show each player's rank and level at the time of that match.
   - Each played match item should show `X beat Y` with the date on the same row, plus a second row showing the winner, earned points, and total score at that time.
   - Clicking a player row in the ranking should open a popup with that player's matches, using the same match row UI as the all-matches popup.
+  - Clicking the wins or losses text in a ranking row should open a popup filtered to that player's wins or losses.
   - The ranking list should show actual rank numbers, not simple index numbers.
   - Ranking numbers should be shown as large typographic numbers in each row, without a circle badge.
   - Players with the same score should share the same rank number.
@@ -36,7 +40,7 @@ This will be a Solid Start application to start darts games with opponents and c
   - The add-player flow should open as a popup.
 - Selecting a player should show a detailed list of the games played by the player and its outcome.
 - There should be a 'Start Match', it should:
-  - be triggered from an `Add Match` button placed below the ranking list.
+  - be triggered from an `Add Match` button placed in the ranking header, next to the match count.
   - open as a popup.
   - ask to select the 2 players
   - show each selectable player as `#rank Name (Lx)`.

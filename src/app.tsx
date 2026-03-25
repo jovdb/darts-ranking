@@ -29,7 +29,10 @@ export default function App() {
   const [isAddingPlayer, setIsAddingPlayer] = createSignal(false);
   const [isAddingMatch, setIsAddingMatch] = createSignal(false);
   const [isViewingMatches, setIsViewingMatches] = createSignal(false);
-  const [selectedPlayerName, setSelectedPlayerName] = createSignal("");
+  const [selectedPlayerHistory, setSelectedPlayerHistory] = createSignal<{
+    playerName: string;
+    type: "all" | "losses" | "wins";
+  } | null>(null);
   const [matchError, setMatchError] = createSignal("");
   const [playerError, setPlayerError] = createSignal("");
   const [hasLoaded, setHasLoaded] = createSignal(false);
@@ -43,12 +46,24 @@ export default function App() {
     return calculateHistoricalMatches(players(), playedMatches());
   });
   const selectedPlayerMatchHistory = createMemo(() => {
-    const playerName = selectedPlayerName();
+    const selectedHistory = selectedPlayerHistory();
+
+    if (!selectedHistory) {
+      return [];
+    }
 
     return matchHistory().filter((match) => {
+      if (selectedHistory.type === "wins") {
+        return match.winningPlayer.name === selectedHistory.playerName;
+      }
+
+      if (selectedHistory.type === "losses") {
+        return match.losingPlayer.name === selectedHistory.playerName;
+      }
+
       return (
-        match.winningPlayer.name === playerName ||
-        match.losingPlayer.name === playerName
+        match.winningPlayer.name === selectedHistory.playerName ||
+        match.losingPlayer.name === selectedHistory.playerName
       );
     });
   });
@@ -97,7 +112,7 @@ export default function App() {
     setPlayerError("");
     setIsAddingMatch(false);
     setIsViewingMatches(false);
-    setSelectedPlayerName("");
+    setSelectedPlayerHistory(null);
     setIsAddingPlayer((isOpen) => !isOpen);
   };
 
@@ -119,26 +134,29 @@ export default function App() {
     setMatchError("");
     setIsAddingPlayer(false);
     setIsViewingMatches(false);
-    setSelectedPlayerName("");
+    setSelectedPlayerHistory(null);
     setIsAddingMatch((isOpen) => !isOpen);
   };
 
   const toggleMatchHistory = () => {
     setIsAddingPlayer(false);
     setIsAddingMatch(false);
-    setSelectedPlayerName("");
+    setSelectedPlayerHistory(null);
     setIsViewingMatches((isOpen) => !isOpen);
   };
 
   const closePlayerMatchHistory = () => {
-    setSelectedPlayerName("");
+    setSelectedPlayerHistory(null);
   };
 
-  const openPlayerMatchHistory = (playerName: string) => {
+  const openPlayerMatchHistory = (
+    playerName: string,
+    type: "all" | "losses" | "wins" = "all",
+  ) => {
     setIsAddingPlayer(false);
     setIsAddingMatch(false);
     setIsViewingMatches(false);
-    setSelectedPlayerName(playerName);
+    setSelectedPlayerHistory({ playerName, type });
   };
 
   const handleAddMatch = (
@@ -220,28 +238,30 @@ export default function App() {
               <div>
                 <h1>Smartphoto darts ranking</h1>
               </div>
-              <button
-                class="player-count player-count-button"
-                type="button"
-                onClick={toggleMatchHistory}
-              >
-                {playedMatches().length} match
-                {playedMatches().length === 1 ? "" : "es"}
-              </button>
+              <div class="ranking-header-actions">
+                <button
+                  class="player-count player-count-button"
+                  type="button"
+                  onClick={toggleMatchHistory}
+                >
+                  {playedMatches().length} match
+                  {playedMatches().length === 1 ? "" : "es"}
+                </button>
+                <button
+                  class="secondary-button ranking-header-button"
+                  type="button"
+                  disabled={players().length < 2}
+                  onClick={toggleMatchForm}
+                >
+                  Add match
+                </button>
+              </div>
             </div>
             <RankingList
-              onSelectPlayer={openPlayerMatchHistory}
+              onSelectPlayerHistory={openPlayerMatchHistory}
               rankings={rankings()}
             />
             <div class="ranking-actions">
-              <button
-                class="secondary-button ranking-action-button"
-                type="button"
-                disabled={players().length < 2}
-                onClick={toggleMatchForm}
-              >
-                Add match
-              </button>
               <button
                 class="secondary-button ranking-action-button"
                 type="button"
@@ -375,7 +395,7 @@ export default function App() {
           </div>
         </Show>
 
-        <Show when={selectedPlayerName().length > 0}>
+        <Show when={selectedPlayerHistory() !== null}>
           <div
             class="popup-backdrop"
             role="presentation"
@@ -391,11 +411,17 @@ export default function App() {
               <div class="card-header popup-header">
                 <div>
                   <h2 id="player-match-history-title">
-                    {selectedPlayerName()} matches
+                    {selectedPlayerHistory()?.playerName}{" "}
+                    {selectedPlayerHistory()?.type === "all"
+                      ? "matches"
+                      : selectedPlayerHistory()?.type}
                   </h2>
                   <p class="card-copy">
-                    Full list of recorded results for {selectedPlayerName()},
-                    from recent to oldest.
+                    Full list of recorded{" "}
+                    {selectedPlayerHistory()?.type === "all"
+                      ? "results"
+                      : selectedPlayerHistory()?.type}{" "}
+                    for {selectedPlayerHistory()?.playerName}, from recent to oldest.
                   </p>
                 </div>
               </div>
@@ -404,7 +430,10 @@ export default function App() {
                 when={selectedPlayerMatchHistory().length > 0}
                 fallback={
                   <p class="helper-text">
-                    {selectedPlayerName()} has no recorded matches yet.
+                    {selectedPlayerHistory()?.playerName} has no recorded{" "}
+                    {selectedPlayerHistory()?.type === "all"
+                      ? "matches"
+                      : selectedPlayerHistory()?.type} yet.
                   </p>
                 }
               >
@@ -412,7 +441,7 @@ export default function App() {
                   <For each={selectedPlayerMatchHistory()}>
                     {(match) => (
                       <MatchHistoryRow
-                        focusedPlayerName={selectedPlayerName()}
+                        focusedPlayerName={selectedPlayerHistory()?.playerName}
                         match={match}
                       />
                     )}

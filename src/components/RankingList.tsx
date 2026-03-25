@@ -5,8 +5,20 @@ import { formatScore, type RankedPlayer } from "~/services/ranking";
 import "./RankingList.css";
 
 type RankingListProps = {
-  onSelectPlayer: (playerName: string) => void;
+  onSelectPlayerHistory: (playerName: string, type: "all" | "losses" | "wins") => void;
   rankings: RankedPlayer[];
+};
+
+const getDifficultyLevelTitle = (difficultyLevel: RankedPlayer["difficultyLevel"]) => {
+  if (difficultyLevel === 3) {
+    return "Level 3: In top 25% of ranking";
+  }
+
+  if (difficultyLevel === 2) {
+    return "Level 2: In top 50% or ranking";
+  }
+
+  return "Level 1: In bottom 50% of ranking";
 };
 
 export function RankingList(props: RankingListProps) {
@@ -22,20 +34,46 @@ export function RankingList(props: RankingListProps) {
       <ul class="ranking-list">
         <For each={props.rankings}>
           {(player) => (
-            <li class="ranking-item">
-              <button
-                class="ranking-button"
-                type="button"
-                onClick={() => props.onSelectPlayer(player.name)}
-              >
+            <li
+              class="ranking-item"
+              onClick={() => props.onSelectPlayerHistory(player.name, "all")}
+            >
+              <div class="ranking-button">
                 <span class="ranking-rank">{player.rank}</span>
                 <div class="ranking-details">
-                  <span class="ranking-name">{player.name}</span>
-                  <span class="ranking-record">
-                    {player.wins} win{player.wins === 1 ? "" : "s"} /{" "}
-                    {player.losses} loss
-                    {player.losses === 1 ? "" : "es"}
-                  </span>
+                  <button
+                    class="ranking-name-button"
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      props.onSelectPlayerHistory(player.name, "all");
+                    }}
+                  >
+                    {player.name}
+                  </button>
+                  <div class="ranking-record">
+                    <button
+                      class="ranking-inline-link"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onSelectPlayerHistory(player.name, "wins");
+                      }}
+                    >
+                      {player.wins} win{player.wins === 1 ? "" : "s"}
+                    </button>
+                    <span>/</span>
+                    <button
+                      class="ranking-inline-link"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onSelectPlayerHistory(player.name, "losses");
+                      }}
+                    >
+                      {player.losses} loss{player.losses === 1 ? "" : "es"}
+                    </button>
+                  </div>
                 </div>
                 <div class="ranking-metrics">
                   <span class="ranking-score">
@@ -43,12 +81,12 @@ export function RankingList(props: RankingListProps) {
                   </span>
                   <span
                     class="difficulty-badge"
-                    title={`Level ${player.difficultyLevel}`}
+                    title={getDifficultyLevelTitle(player.difficultyLevel)}
                   >
                     L{player.difficultyLevel}
                   </span>
                 </div>
-              </button>
+              </div>
             </li>
           )}
         </For>
