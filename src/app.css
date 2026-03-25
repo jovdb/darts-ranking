@@ -1,0 +1,66 @@
+:root {
+  color: #1f2933;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(255, 255, 255, 0.92),
+      rgba(255, 255, 255, 0) 38%
+    ),
+    linear-gradient(180deg, #f7efe3 0%, #e8f1f5 100%);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+.hero {
+  width: min(100%, 42rem);
+  padding: 3rem;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(31, 41, 51, 0.08);
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 60px rgba(31, 41, 51, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6b7a89;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  line-height: 0.95;
+  color: #102a43;
+}
+
+.copy {
+  margin: 1.25rem auto 0;
+  max-width: 28rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #486581;
+}
