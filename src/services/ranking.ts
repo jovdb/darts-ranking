@@ -27,6 +27,15 @@ export type HistoricalMatch = {
   winningPlayer: HistoricalMatchPlayer;
 };
 
+export type RankingTimelineSnapshot = {
+  datePlayedGmt: string;
+  earnedPoints: number;
+  losingPlayer: string;
+  matchIndex: number;
+  rankings: RankedPlayer[];
+  winningPlayer: string;
+};
+
 type ProcessedMatch = {
   earnedPoints: number;
   match: PlayedMatch;
@@ -285,4 +294,71 @@ export function calculateHistoricalMatches(
   }
 
   return historicalMatches.reverse();
+}
+
+export function calculateRankingTimeline(
+  players: Player[],
+  playedMatches: PlayedMatch[],
+): RankingTimelineSnapshot[] {
+  const playerNames = new Set(players.map((player) => player.name));
+  const sortedMatches = playedMatches
+    .map((match) => ({
+      match,
+      playedAt: new Date(match.datePlayedGmt),
+    }))
+    .filter(
+      ({ match, playedAt }) =>
+        playerNames.has(match.winningPlayer) &&
+        playerNames.has(match.losingPlayer) &&
+        !Number.isNaN(playedAt.getTime()),
+    )
+    .sort((leftMatch, rightMatch) => {
+      return leftMatch.playedAt.getTime() - rightMatch.playedAt.getTime();
+    });
+
+  const processedMatches: ProcessedMatch[] = [];
+  const rankingTimeline: RankingTimelineSnapshot[] = [];
+
+  for (const [matchIndex, { match, playedAt }] of sortedMatches.entries()) {
+    const windowStartTime = subtractMonths(
+      playedAt,
+      WINDOW_IN_MONTHS,
+    ).getTime();
+    const rankingAtMatchTime = buildRankingsFromProcessedMatches(
+      players,
+      processedMatches.filter(
+        (processedMatch) =>
+          processedMatch.playedAtTime >= windowStartTime &&
+          processedMatch.playedAtTime < playedAt.getTime(),
+      ),
+    );
+    const losingPlayerDifficulty =
+      rankingAtMatchTime.find(
+        (rankedPlayer) => rankedPlayer.name === match.losingPlayer,
+      )?.difficultyLevel ?? 1;
+
+    processedMatches.push({
+      earnedPoints: losingPlayerDifficulty,
+      match,
+      playedAtTime: playedAt.getTime(),
+    });
+
+    rankingTimeline.push({
+      datePlayedGmt: match.datePlayedGmt,
+      earnedPoints: losingPlayerDifficulty,
+      losingPlayer: match.losingPlayer,
+      matchIndex,
+      rankings: buildRankingsFromProcessedMatches(
+        players,
+        processedMatches.filter(
+          (processedMatch) =>
+            processedMatch.playedAtTime >= windowStartTime &&
+            processedMatch.playedAtTime <= playedAt.getTime(),
+        ),
+      ),
+      winningPlayer: match.winningPlayer,
+    });
+  }
+
+  return rankingTimeline;
 }

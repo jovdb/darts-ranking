@@ -14,6 +14,15 @@ This will be a Solid Start application to start darts games with opponents and c
 ## UI Parts
 
 - Main part is player ranking with scores.
+  - A ranking graph section should show ranking points over time.
+  - The ranking graph should show points vertically.
+  - The ranking graph should show time horizontally, using one step per played match instead of linear wall-clock spacing.
+  - The ranking graph should start with a `Match 0` step before the first played match.
+  - The ranking graph should show one line per player.
+  - Hovering the graph should show the match summary for that match step as `X beats Y: Zpts`.
+  - Hovering anywhere inside a match column should show the same match-summary tooltip.
+  - The ranking graph tooltip should also show the date the match was played.
+  - Hovering a match column should subtly highlight that column on the graph.
   - A player grid matrix should show all player names horizontally as winners and vertically as losers.
   - Each player-grid cell should show the number of matches won for that winner/loser matchup.
   - The player grid should include a last row with total wins per winner and a last column with total losses per loser.

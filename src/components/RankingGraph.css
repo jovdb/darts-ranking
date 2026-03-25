@@ -1,0 +1,162 @@
+.ranking-graph-card {
+  overflow: hidden;
+}
+
+.ranking-graph-surface {
+  position: relative;
+  border: 1px solid rgba(17, 37, 60, 0.08);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(244, 248, 250, 0.94) 100%);
+}
+
+.ranking-graph-scroll {
+  overflow-x: auto;
+}
+
+.ranking-graph-svg {
+  display: block;
+  width: 100%;
+  min-width: 48rem;
+  height: auto;
+}
+
+.ranking-graph-axis {
+  stroke: rgba(17, 37, 60, 0.28);
+  stroke-width: 1.5;
+}
+
+.ranking-graph-gridline {
+  stroke: rgba(17, 37, 60, 0.1);
+  stroke-width: 1;
+}
+
+.ranking-graph-gridline-vertical {
+  stroke-dasharray: 4 6;
+}
+
+.ranking-graph-hover-column {
+  fill: rgba(15, 118, 110, 0.08);
+  pointer-events: none;
+}
+
+.ranking-graph-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  transition: opacity 120ms ease;
+}
+
+.ranking-graph-hit-line {
+  stroke-linecap: round;
+  pointer-events: stroke;
+}
+
+.ranking-graph-point {
+  transition: opacity 120ms ease, r 120ms ease;
+}
+
+.ranking-graph-tick-label,
+.ranking-graph-axis-title {
+  fill: var(--muted-color);
+  font-size: 0.85rem;
+}
+
+.ranking-graph-axis-title {
+  font-weight: 700;
+}
+
+.ranking-graph-tooltip {
+  position: absolute;
+  display: grid;
+  gap: 0.18rem;
+  min-width: 10rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(17, 37, 60, 0.12);
+  border-radius: 0.85rem;
+  background-color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 28px rgba(17, 37, 60, 0.14);
+  color: var(--text-color);
+  pointer-events: none;
+}
+
+.ranking-graph-tooltip span {
+  color: var(--muted-color);
+  font-size: 0.88rem;
+}
+
+.ranking-graph-tooltip-line {
+  color: var(--text-color);
+}
+
+.ranking-graph-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.6rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.ranking-graph-legend-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.55rem;
+  row-gap: 0.1rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(17, 37, 60, 0.08);
+  border-radius: 0.85rem;
+  background-color: rgba(255, 255, 255, 0.68);
+  transition: background-color 120ms ease, opacity 120ms ease;
+}
+
+.ranking-graph-legend-item:hover {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+.ranking-graph-legend-item[data-dimmed="true"] {
+  opacity: 0.35;
+}
+
+.ranking-graph-legend-item[data-active="true"] {
+  border-color: rgba(17, 37, 60, 0.18);
+  background-color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 20px rgba(17, 37, 60, 0.08);
+}
+
+.ranking-graph-legend-item[data-active="true"] .ranking-graph-legend-name {
+  color: var(--accent-color-strong);
+}
+
+.ranking-graph-legend-swatch {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 999px;
+}
+
+.ranking-graph-legend-name {
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.ranking-graph-legend-meta {
+  grid-column: 2;
+  color: var(--muted-color);
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .ranking-graph-svg {
+    min-width: 40rem;
+  }
+
+  .ranking-graph-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .ranking-graph-tooltip {
+    min-width: 8.5rem;
+  }
+}

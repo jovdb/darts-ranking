@@ -11,10 +11,12 @@ import { AddMatchForm } from "~/components/AddMatchForm";
 import { AddPlayerForm } from "~/components/AddPlayerForm";
 import { MatchHistoryRow } from "~/components/MatchHistoryRow";
 import { PlayerGrid } from "~/components/PlayerGrid";
+import { RankingGraph } from "~/components/RankingGraph";
 import { RankingList } from "~/components/RankingList";
 import { getRematchRestriction } from "~/services/match-rules";
 import {
   calculateHistoricalMatches,
+  calculateRankingTimeline,
   calculateRankings,
 } from "~/services/ranking";
 import { createLocalAppStorage } from "~/services/storage";
@@ -44,6 +46,9 @@ export default function App() {
   });
   const matchHistory = createMemo(() => {
     return calculateHistoricalMatches(players(), playedMatches());
+  });
+  const rankingTimeline = createMemo(() => {
+    return calculateRankingTimeline(players(), playedMatches());
   });
   const selectedPlayerMatchHistory = createMemo(() => {
     const selectedHistory = selectedPlayerHistory();
@@ -277,6 +282,8 @@ export default function App() {
               </Show>
             </div>
           </section>
+
+          <RankingGraph rankings={rankings()} timeline={rankingTimeline()} />
 
           <PlayerGrid
             historicalMatches={matchHistory()}

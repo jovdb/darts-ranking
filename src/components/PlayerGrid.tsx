@@ -158,7 +158,7 @@ export function PlayerGrid(props: PlayerGridProps) {
       <section class="card card-wide">
         <div class="card-header">
           <div>
-            <h2>Player grid</h2>
+            <h2>Matches grid</h2>
             <p class="card-copy">
               Winners across the top, losers down the side, with each cell showing
               recorded wins for that matchup.
