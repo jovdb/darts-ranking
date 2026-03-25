@@ -1,4 +1,4 @@
-import { For, Show, createMemo, createSignal } from "solid-js";
+import { For, Show, createMemo, createSignal, createEffect } from "solid-js";
 
 import {
   formatScore,
@@ -63,10 +63,30 @@ const formatTooltipTime = (value: string) => {
 };
 
 const createLinePath = (points: GraphPoint[]) => {
-  return points
-    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x} ${point.y}`)
-    .join(" ");
-};
+  if (points.length < 2) return "";
+
+  let path = `M${points[0].x} ${points[0].y}`;
+
+  // For smooth Bézier curves connecting multiple points
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+
+    // Calculate smooth Bézier control points
+    const dx = curr.x - prev.x;
+    const dy = curr.y - prev.y;
+
+    // Control points for ultra-smooth Bézier curves
+    const cp1x = prev.x + dx * 0.5;
+    const cp1y = prev.y + dy * 0.0;
+    const cp2x = curr.x - dx * 0.5;
+    const cp2y = curr.y - dy * 0.00;
+
+    path += ` C${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curr.x} ${curr.y}`;
+  }
+
+  return path;
+};;
 
 const getStepX = (stepIndex: number, stepCount: number, plotWidth: number) => {
   return (
@@ -391,64 +411,70 @@ export function RankingGraph(props: RankingGraphProps) {
               </For>
 
               <For each={graphSeries()}>
-                {(series) => (
-                  <g>
-                    <path
-                      class="ranking-graph-line"
-                      d={createLinePath(series.points)}
-                      opacity={
-                        !activePlayerName() || activePlayerName() === series.name
-                          ? 1
-                          : 0.22
-                      }
-                      stroke={series.color}
-                    />
-                    <For each={series.points.slice(1)}>
-                      {(point, index) => {
-                        const previousPoint = () => series.points[index()];
+                {(series) => {
+                  let pathRef: SVGPathElement | undefined;
 
-                        return (
-                          <line
-                            class="ranking-graph-hit-line"
-                            opacity={0}
-                            stroke={series.color}
-                            stroke-width="16"
-                            x1={previousPoint().x}
-                            x2={point.x}
-                            y1={previousPoint().y}
-                            y2={point.y}
+                  createEffect(() => {
+                    // Animation is now only triggered by legend/point clicks, not hover
+                    const active = activePlayerName();
+
+                    if (active === series.name && pathRef) {
+                      // Reset animation first
+                      pathRef.style.animation = 'none';
+                      pathRef.getBoundingClientRect(); // Force reflow
+
+                      const length = pathRef.getTotalLength();
+                      if (length > 0) {
+                        pathRef.style.strokeDasharray = `${length}`;
+                        pathRef.style.strokeDashoffset = `${length}`;
+                        pathRef.style.animation = `draw-line 0.8s ease-in-out forwards`;
+                      }
+                    }
+                  });
+
+                  return (
+                    <g>
+                      <path
+                        ref={pathRef}
+                        class="ranking-graph-line"
+                        classList={{
+                          "ranking-graph-line-animated": activePlayerName() === series.name
+                        }}
+                        d={createLinePath(series.points)}
+                        opacity={
+                          !activePlayerName() || activePlayerName() === series.name
+                            ? 1
+                            : 0.22
+                        }
+                        stroke={series.color}
+                        style={{
+                          "stroke-width": activePlayerName() === series.name ? "5px" : "3px"
+                        }}
+                      />
+                      <For each={series.points}>
+                        {(point) => (
+                          <circle
+                            class="ranking-graph-point"
+                            cx={point.x}
+                            cy={point.y}
+                            fill={point.color}
+                            opacity={
+                              !activePlayerName() || activePlayerName() === series.name
+                                ? 1
+                                : 0.3
+                            }
+                            r={activePoint() === point ? 5.5 : 4}
                             onMouseEnter={() => {
                               setActiveMatchIndex(point.matchIndex);
                               setHoveredPlayerName(series.name);
                               setActivePoint(point);
                             }}
                           />
-                        );
-                      }}
-                    </For>
-                    <For each={series.points}>
-                      {(point) => (
-                        <circle
-                          class="ranking-graph-point"
-                          cx={point.x}
-                          cy={point.y}
-                          fill={point.color}
-                          opacity={
-                            !activePlayerName() || activePlayerName() === series.name
-                              ? 1
-                              : 0.3
-                          }
-                          r={activePoint() === point ? 5.5 : 4}
-                          onMouseEnter={() => {
-                            setActiveMatchIndex(point.matchIndex);
-                            setHoveredPlayerName(series.name);
-                            setActivePoint(point);
-                          }}
-                        />
-                      )}
-                    </For>
-                  </g>
-                )}
+                        )}
+                      </For>
+                    </g>
+                  );
+                }}
               </For>
             </svg>
           </div>
@@ -475,7 +501,9 @@ export function RankingGraph(props: RankingGraphProps) {
                 data-active={activePlayerName() === series.name}
                 data-dimmed={Boolean(activePlayerName()) && activePlayerName() !== series.name}
                 onMouseEnter={() => setHoveredPlayerName(series.name)}
-                onMouseLeave={() => setHoveredPlayerName(null)}
+                onMouseLeave={() => {
+                  setHoveredPlayerName(null);
+                }}
               >
                 <span
                   class="ranking-graph-legend-swatch"
