@@ -60,15 +60,6 @@ input {
   box-shadow: 0 24px 60px rgba(17, 37, 60, 0.12);
 }
 
-.eyebrow {
-  margin: 0 0 1rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted-color);
-}
-
 h1 {
   margin: 0;
   font-size: clamp(2.5rem, 8vw, 4.75rem);

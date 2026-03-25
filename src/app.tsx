@@ -60,11 +60,9 @@ export default function App() {
     <main class="app-shell">
       <section class="app-panel">
         <header class="app-intro">
-          <p class="eyebrow">Darts Ranking</p>
-          <h1>Players</h1>
+          <h1>Smartphoto Darts Ranking</h1>
           <p class="copy">
-            Start with a local player roster. Match history and ranking can be
-            layered onto the same state shape later.
+            Sliding ranking of the last 3 months.
           </p>
         </header>
 
