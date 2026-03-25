@@ -6,7 +6,7 @@ This will be a Solid Start application to start darts games with opponents and c
 
 - Framework: Solid Start
 - Language: TypeScript 6
-- Styling: regular CSS imports
+- Styling: regular CSS import per component
 - Tooling:
   - ESLint
   - Prettier
@@ -14,13 +14,22 @@ This will be a Solid Start application to start darts games with opponents and c
 ## UI Parts
 
 - Main part is player ranking with scores.
+  - The ranking list should show actual rank numbers, not simple index numbers.
+  - Players with the same score should share the same rank number.
+  - Rank numbers should keep incrementing without gaps after ties (for example `1, 1, 2, 3`).
+  - Players with the same score should be shown in a randomized order on each refresh.
 - Allow adding players. Players will only have a name.
+  - The add-player action should be triggered from a button placed below the ranking list.
+  - The add-player flow should open as a popup.
 - Selecting a player should show a detailed list of the games played by the player and it outcome.
 - There should be a 'Start Match', it should:
+  - be triggered from an `Add Match` button placed below the ranking list.
+  - open as a popup.
   - ask to select the 2 players
-  - show the points that can be earned.
+  - show each selectable player as `#rank Name (Lx)`.
+  - show the points the winner will earn, for example `Jo (+1pt)`.
   - allow to select the winner
-  - addpranking the confirmed match to state.
+  - At confirmed add match information to the state.
 - You can add animations to make it more attractive (you can use View Transition API)
 
 ## State

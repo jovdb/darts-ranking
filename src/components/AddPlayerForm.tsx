@@ -5,6 +5,7 @@ import "./AddPlayerForm.css";
 type AddPlayerFormProps = {
   error?: string;
   onAddPlayer: (name: string) => boolean;
+  onCancel: () => void;
 };
 
 export function AddPlayerForm(props: AddPlayerFormProps) {
@@ -34,9 +35,18 @@ export function AddPlayerForm(props: AddPlayerFormProps) {
         placeholder="e.g. Alex"
         autocomplete="off"
       />
-      <button class="primary-button" type="submit">
-        Add player
-      </button>
+      <div class="form-actions">
+        <button class="primary-button" type="submit">
+          Add player
+        </button>
+        <button
+          class="secondary-button form-cancel-button"
+          type="button"
+          onClick={() => props.onCancel()}
+        >
+          Close
+        </button>
+      </div>
       <p
         class="form-message"
         classList={{

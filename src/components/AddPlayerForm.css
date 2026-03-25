@@ -60,6 +60,17 @@
   outline-offset: 2px;
 }
 
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.form-cancel-button {
+  min-width: 7rem;
+}
+
 .form-message {
   min-height: 1.25rem;
   margin: 0;
@@ -76,7 +87,12 @@
 }
 
 @media (max-width: 640px) {
-  .primary-button {
+  .form-actions {
+    display: grid;
+  }
+
+  .primary-button,
+  .form-cancel-button {
     width: 100%;
   }
 }

@@ -19,6 +19,7 @@ const appStorage = createLocalAppStorage();
 
 export default function App() {
   const [appState, setAppState] = createSignal<AppState>(createEmptyAppState());
+  const [isAddingPlayer, setIsAddingPlayer] = createSignal(false);
   const [isAddingMatch, setIsAddingMatch] = createSignal(false);
   const [matchError, setMatchError] = createSignal("");
   const [playerError, setPlayerError] = createSignal("");
@@ -70,12 +71,29 @@ export default function App() {
     return true;
   };
 
+  const togglePlayerForm = () => {
+    setPlayerError("");
+    setIsAddingMatch(false);
+    setIsAddingPlayer((isOpen) => !isOpen);
+  };
+
+  const handleAddPlayerFromRanking = (rawName: string) => {
+    const didAddPlayer = handleAddPlayer(rawName);
+
+    if (didAddPlayer) {
+      setIsAddingPlayer(false);
+    }
+
+    return didAddPlayer;
+  };
+
   const toggleMatchForm = () => {
     if (players().length < 2) {
       return;
     }
 
     setMatchError("");
+    setIsAddingPlayer(false);
     setIsAddingMatch((isOpen) => !isOpen);
   };
 
@@ -151,70 +169,104 @@ export default function App() {
         </header>
 
         <div class="app-grid">
-          <section class="card">
-            <h2>Add a player</h2>
-            <p class="card-copy">Names are stored locally in this browser.</p>
-            <AddPlayerForm
-              error={playerError()}
-              onAddPlayer={handleAddPlayer}
-            />
-          </section>
-
-          <section class="card">
-            <div class="card-header">
-              <div>
-                <h2>Start a match</h2>
-                <p class="card-copy">
-                  Choose two players, preview the available points, and confirm
-                  the winner.
-                </p>
-              </div>
-              <button
-                class="secondary-button"
-                type="button"
-                disabled={players().length < 2}
-                onClick={toggleMatchForm}
-              >
-                {isAddingMatch() ? "Cancel" : "Add Match"}
-              </button>
-            </div>
-
-            <Show
-              when={players().length >= 2}
-              fallback={
-                <p class="helper-text">
-                  Add at least two players before starting a match.
-                </p>
-              }
-            >
-              <Show
-                when={isAddingMatch()}
-                fallback={
-                  <p class="helper-text">
-                    Recorded matches: {playedMatches().length}
-                  </p>
-                }
-              >
-                <AddMatchForm
-                  error={matchError()}
-                  onAddMatch={handleAddMatch}
-                  players={rankings()}
-                />
-              </Show>
-            </Show>
-          </section>
-
           <section class="card card-wide">
             <div class="card-header">
-              <h2>Current ranking</h2>
+              <div>
+                <h2>Current ranking</h2>
+                <p class="card-copy">
+                  Recorded matches: {playedMatches().length}
+                </p>
+              </div>
               <span class="player-count">
                 {playedMatches().length} match
                 {playedMatches().length === 1 ? "" : "es"}
               </span>
             </div>
             <RankingList rankings={rankings()} />
+            <div class="ranking-actions">
+              <button
+                class="secondary-button ranking-action-button"
+                type="button"
+                disabled={players().length < 2}
+                onClick={toggleMatchForm}
+              >
+                Add match
+              </button>
+              <button
+                class="secondary-button ranking-action-button"
+                type="button"
+                onClick={togglePlayerForm}
+              >
+                {isAddingPlayer() ? "Cancel" : "Add player"}
+              </button>
+
+              <Show when={players().length < 2}>
+                <p class="helper-text ranking-helper-text">
+                  Add at least two players before starting a match.
+                </p>
+              </Show>
+            </div>
           </section>
         </div>
+
+        <Show when={isAddingMatch()}>
+          <div
+            class="popup-backdrop"
+            role="presentation"
+            onClick={toggleMatchForm}
+          >
+            <section
+              class="popup-card"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="add-match-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div class="card-header popup-header">
+                <div>
+                  <h2 id="add-match-title">Start a match</h2>
+                  <p class="card-copy">
+                    Choose two players, preview the available points, and confirm
+                    the winner.
+                  </p>
+                </div>
+              </div>
+              <AddMatchForm
+                error={matchError()}
+                onCancel={toggleMatchForm}
+                onAddMatch={handleAddMatch}
+                players={rankings()}
+              />
+            </section>
+          </div>
+        </Show>
+
+        <Show when={isAddingPlayer()}>
+          <div
+            class="popup-backdrop"
+            role="presentation"
+            onClick={togglePlayerForm}
+          >
+            <section
+              class="popup-card"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="add-player-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div class="card-header popup-header">
+                <div>
+                  <h2 id="add-player-title">Add player</h2>
+                </div>
+              </div>
+              <AddPlayerForm
+                error={playerError()}
+                onAddPlayer={handleAddPlayerFromRanking}
+                onCancel={togglePlayerForm}
+              />
+            </section>
+          </div>
+        </Show>
       </section>
     </main>
   );

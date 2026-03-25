@@ -35,7 +35,7 @@ export function RankingList(props: RankingListProps) {
                 <span class="ranking-score">
                   {formatScore(player.score)} pts
                 </span>
-                <span class="difficulty-badge">L{player.difficultyLevel}</span>
+                <span class="difficulty-badge" title={`Level ${player.difficultyLevel}`}>L{player.difficultyLevel}</span>
               </div>
             </li>
           )}

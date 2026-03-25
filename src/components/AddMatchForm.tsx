@@ -6,6 +6,7 @@ import "./AddMatchForm.css";
 
 type AddMatchFormProps = {
   error?: string;
+  onCancel: () => void;
   onAddMatch: (
     firstPlayerName: string,
     secondPlayerName: string,
@@ -17,6 +18,14 @@ type AddMatchFormProps = {
 type MatchPreview = {
   firstPlayerPoints: number;
   secondPlayerPoints: number;
+};
+
+const formatPlayerLabel = (player: RankedPlayer) => {
+  return `#${player.rank} ${player.name} (L${player.difficultyLevel})`;
+};
+
+const formatPointLabel = (points: number) => {
+  return `(+${points}${points === 1 ? "pt" : "pts"})`;
 };
 
 export function AddMatchForm(props: AddMatchFormProps) {
@@ -107,7 +116,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
           >
             <option value="">Select a player</option>
             <For each={props.players}>
-              {(player) => <option value={player.name}>{player.name}</option>}
+              {(player) => (
+                <option value={player.name}>{formatPlayerLabel(player)}</option>
+              )}
             </For>
           </select>
         </div>
@@ -130,15 +141,15 @@ export function AddMatchForm(props: AddMatchFormProps) {
                 (player) => player.name !== firstPlayerName(),
               )}
             >
-              {(player) => <option value={player.name}>{player.name}</option>}
+              {(player) => (
+                <option value={player.name}>{formatPlayerLabel(player)}</option>
+              )}
             </For>
           </select>
         </div>
       </div>
 
-      <Show
-        when={matchPreview() && selectedFirstPlayer() && selectedSecondPlayer()}
-      >
+      <Show when={matchPreview()}>
         {(currentPreview) => (
           <fieldset class="winner-options">
             <legend class="field-label">Winner</legend>
@@ -159,11 +170,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
               <span class="winner-choice-details">
                 <span class="winner-choice-name">
                   {selectedFirstPlayer()?.name}
-                </span>
-                <span class="winner-choice-points">
-                  + {currentPreview().firstPlayerPoints} pt if{" "}
-                  {selectedSecondPlayer()?.name} is L
-                  {selectedSecondPlayer()?.difficultyLevel}
+                  <span class="winner-choice-points">
+                    {formatPointLabel(currentPreview().firstPlayerPoints)}
+                  </span>
                 </span>
               </span>
             </label>
@@ -184,11 +193,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
               <span class="winner-choice-details">
                 <span class="winner-choice-name">
                   {selectedSecondPlayer()?.name}
-                </span>
-                <span class="winner-choice-points">
-                  + {currentPreview().secondPlayerPoints} pt if{" "}
-                  {selectedFirstPlayer()?.name} is L
-                  {selectedFirstPlayer()?.difficultyLevel}
+                  <span class="winner-choice-points">
+                    {formatPointLabel(currentPreview().secondPlayerPoints)}
+                  </span>
                 </span>
               </span>
             </label>
@@ -196,9 +203,18 @@ export function AddMatchForm(props: AddMatchFormProps) {
         )}
       </Show>
 
-      <button class="primary-button" type="submit">
-        Confirm match
-      </button>
+      <div class="form-actions">
+        <button class="primary-button" type="submit">
+          Confirm match
+        </button>
+        <button
+          class="secondary-button form-cancel-button"
+          type="button"
+          onClick={() => props.onCancel()}
+        >
+          Close
+        </button>
+      </div>
 
       <p
         class="form-message"

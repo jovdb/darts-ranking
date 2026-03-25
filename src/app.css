@@ -166,6 +166,49 @@ h1 {
   line-height: 1.6;
 }
 
+.ranking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.ranking-action-button {
+  flex: 0 0 auto;
+}
+
+.ranking-helper-text {
+  flex-basis: 100%;
+  margin-top: 0;
+}
+
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background-color: rgba(17, 37, 60, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.popup-card {
+  width: min(100%, 36rem);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1.5rem;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  box-shadow: 0 26px 60px rgba(17, 37, 60, 0.22);
+}
+
+.popup-header {
+  align-items: flex-start;
+}
+
 .card-wide {
   min-height: 100%;
 }
@@ -183,6 +226,14 @@ h1 {
   }
 
   .secondary-button {
+    width: 100%;
+  }
+
+  .ranking-actions {
+    display: grid;
+  }
+
+  .ranking-action-button {
     width: 100%;
   }
 }
