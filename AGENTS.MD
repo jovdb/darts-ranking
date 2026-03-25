@@ -6,7 +6,6 @@ This will be a Solid Start application to start darts games with opponents and c
 
 - Framework: Solid Start
 - Language: TypeScript 6
-- UI library: Base UI
 - Styling: regular CSS imports
 - Tooling:
   - ESLint
@@ -17,6 +16,9 @@ This will be a Solid Start application to start darts games with opponents and c
 - Main part is player ranking with scores.
 - Allow adding players. Players will only have a name.
 - Selecting a player should show a detailed list of the games played by the player and it outcome.
+- It should be possible to select 2 players and press 'Start Match'
+  It should show the points that can be earned.
+- You can add animations to make it more attractive (you can use View Transition API)
 
 ## State
 
@@ -51,3 +53,10 @@ The scoring system will be calculated from state using the following logic:
 - Calculate in chronological order so difficulty levels can be built from the ranking at that time.
 - Sum all played games per person to get the final score.
 - Order players by score in a ranking list.
+
+Keep this AGENTS.MD up-to-date with later requested prompts
+
+## Hosting
+
+This website is intended to be hosted on Github pages so it should be a static website.
+When pushed to Github, it should build the static files and replace the latest version.
