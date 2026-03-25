@@ -14,6 +14,10 @@ This will be a Solid Start application to start darts games with opponents and c
 ## UI Parts
 
 - Main part is player ranking with scores.
+  - Clicking the match count should open a popup with a scrollable list of all played matches, ordered from recent to oldest.
+  - The played matches list should show each player's rank and level at the time of that match.
+  - Each played match item should show `X beat Y` with the date on the same row, plus a second row showing the winner, earned points, and total score at that time.
+  - Clicking a player row in the ranking should open a popup with that player's matches, using the same match row UI as the all-matches popup.
   - The ranking list should show actual rank numbers, not simple index numbers.
   - Ranking numbers should be shown as large typographic numbers in each row, without a circle badge.
   - Players with the same score should share the same rank number.
@@ -22,7 +26,7 @@ This will be a Solid Start application to start darts games with opponents and c
 - Allow adding players. Players will only have a name.
   - The add-player action should be triggered from a button placed below the ranking list.
   - The add-player flow should open as a popup.
-- Selecting a player should show a detailed list of the games played by the player and it outcome.
+- Selecting a player should show a detailed list of the games played by the player and its outcome.
 - There should be a 'Start Match', it should:
   - be triggered from an `Add Match` button placed below the ranking list.
   - open as a popup.

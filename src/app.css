@@ -103,6 +103,20 @@ select {
   font-weight: 700;
 }
 
+.player-count-button {
+  border: 0;
+  cursor: pointer;
+}
+
+.player-count-button:hover {
+  background-color: rgba(180, 90, 34, 0.18);
+}
+
+.player-count-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: 2px;
+}
+
 .secondary-button {
   min-width: 9rem;
   padding: 0.8rem 1rem;
@@ -173,8 +187,32 @@ select {
   box-shadow: 0 26px 60px rgba(17, 37, 60, 0.22);
 }
 
+.popup-card-wide {
+  width: min(100%, 44rem);
+}
+
 .popup-header {
   align-items: flex-start;
+}
+
+.match-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  max-height: min(24rem, 55vh);
+  overflow: auto;
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.popup-footer-button {
+  min-width: 7rem;
 }
 
 .card-wide {
@@ -202,6 +240,14 @@ select {
   }
 
   .ranking-action-button {
+    width: 100%;
+  }
+
+  .popup-footer {
+    justify-content: stretch;
+  }
+
+  .popup-footer-button {
     width: 100%;
   }
 }

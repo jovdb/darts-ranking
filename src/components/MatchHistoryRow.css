@@ -1,0 +1,71 @@
+.match-history-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(17, 37, 60, 0.08);
+  border-radius: 1rem;
+  background-color: rgba(255, 255, 255, 0.68);
+}
+
+.match-history-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.match-history-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  font-weight: 600;
+}
+
+.match-history-winner {
+  color: var(--accent-color-strong);
+}
+
+.match-history-separator,
+.match-history-date {
+  color: var(--muted-color);
+}
+
+.match-history-date {
+  font-size: 0.92rem;
+}
+
+.match-history-points {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--accent-color-strong);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.match-history-points-earned {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.match-history-points-name {
+  color: var(--text-color);
+}
+
+.match-history-points-total {
+  color: var(--muted-color);
+}
+
+@media (max-width: 640px) {
+  .match-history-top {
+    grid-template-columns: 1fr;
+  }
+
+  .match-history-points {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

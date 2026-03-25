@@ -7,16 +7,38 @@
 }
 
 .ranking-item {
+  overflow: hidden;
+}
+
+.ranking-button {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem;
+  width: 100%;
   padding: 1.15rem 1rem 1.15rem 4.75rem;
+  border: 0;
+  background-color: var(--surface-strong);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ranking-button:hover {
+  background-color: rgba(255, 255, 255, 0.96);
+}
+
+.ranking-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: -3px;
+}
+
+.ranking-item {
   background-color: var(--surface-strong);
   border: 1px solid rgba(17, 37, 60, 0.08);
   border-radius: 1rem;
-  overflow: hidden;
 }
 
 .ranking-rank {
@@ -85,7 +107,7 @@
 }
 
 @media (max-width: 640px) {
-  .ranking-item {
+  .ranking-button {
     grid-template-columns: 1fr;
     justify-items: start;
     padding-left: 4rem;
