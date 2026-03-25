@@ -1,15 +1,15 @@
 import { For, Show } from "solid-js";
 
-import type { Player } from "~/types/app-state";
+import { formatScore, type RankedPlayer } from "~/services/ranking";
 
 type PlayerListProps = {
-  players: Player[];
+  rankings: RankedPlayer[];
 };
 
 export function PlayerList(props: PlayerListProps) {
   return (
     <Show
-      when={props.players.length > 0}
+      when={props.rankings.length > 0}
       fallback={
         <p class="empty-state">
           No players yet. Add the first competitor to start building the roster.
@@ -17,13 +17,26 @@ export function PlayerList(props: PlayerListProps) {
       }
     >
       <ul class="player-items">
-        <For each={props.players}>
-          {(player, index) => (
+        <For each={props.rankings}>
+          {(player) => (
             <li class="player-list-item">
               <span class="player-index">
-                {String(index() + 1).padStart(2, "0")}
+                {String(player.rank).padStart(2, "0")}
               </span>
-              <span class="player-name">{player.name}</span>
+              <div class="player-details">
+                <span class="player-name">{player.name}</span>
+                <span class="player-record">
+                  {player.wins} win{player.wins === 1 ? "" : "s"} /{" "}
+                  {player.losses} loss
+                  {player.losses === 1 ? "" : "es"}
+                </span>
+              </div>
+              <div class="player-metrics">
+                <span class="player-score">
+                  {formatScore(player.score)} pts
+                </span>
+                <span class="difficulty-badge">L{player.difficultyLevel}</span>
+              </div>
             </li>
           )}
         </For>

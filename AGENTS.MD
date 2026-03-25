@@ -16,8 +16,11 @@ This will be a Solid Start application to start darts games with opponents and c
 - Main part is player ranking with scores.
 - Allow adding players. Players will only have a name.
 - Selecting a player should show a detailed list of the games played by the player and it outcome.
-- It should be possible to select 2 players and press 'Start Match'
-  It should show the points that can be earned.
+- There should be a 'Start Match', it should:
+  - ask to select the 2 players
+  - show the points that can be earned.
+  - allow to select the winner
+  - addpranking the confirmed match to state.
 - You can add animations to make it more attractive (you can use View Transition API)
 
 ## State
@@ -36,11 +39,11 @@ We do not store ranking or difficulty information directly, so the scoring/ranki
 
 Each person will have a calculated difficulty level:
 
-- Top 25% best players will have level 3 (L3).
-  - L3 becomes available only if there are 5 different scores.
-- Top 50% best players will have level 2 (L2).
-  - L2 becomes available only if there are 3 different scores.
-- The rest is level 1 (L1).
+- Top 25% best players in the ranking will have level 3 (L3).
+  - L3 becomes available only if there are at least 10 games played.
+- Top 50% best players in the ranking will have level 2 (L2).
+  - L2 becomes available only if there are at least 5 games.
+- The rest on the ranking has level 1 (L1).
 
 ## Scoring Logic
 
