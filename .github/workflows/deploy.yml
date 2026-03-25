@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SERVER_PRESET: github-pages
+      SERVER_BASE_URL: /darts-ranking/
 
     steps:
     - name: Checkout
@@ -32,7 +35,7 @@ jobs:
       run: npm ci
 
     - name: Build
-      run: npm run build --baseUrl /darts-ranking/
+      run: npm run build
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
