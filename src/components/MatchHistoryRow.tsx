@@ -30,7 +30,6 @@ const formatHistoricalPlayerLabel = (player: {
 };
 
 export function MatchHistoryRow(props: MatchHistoryRowProps) {
-  const isFocusedPlayerView = () => Boolean(props.focusedPlayerName);
   const focusedPlayerWon = () => {
     return props.match.winningPlayer.name === props.focusedPlayerName;
   };

@@ -1,0 +1,191 @@
+.player-grid-scroll {
+  overflow: auto;
+  border: 1px solid rgba(17, 37, 60, 0.08);
+  border-radius: 1rem;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.player-grid-table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.player-grid-table th,
+.player-grid-table td {
+  padding: 0.3rem 0.4rem;
+  border-right: 1px solid rgba(17, 37, 60, 0.08);
+  border-bottom: 1px solid rgba(17, 37, 60, 0.08);
+  text-align: center;
+}
+
+.player-grid-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.winners {
+  background-color: rgba(222, 243, 227, 0.96);
+}
+
+.player-grid-corner,
+.player-grid-row-header {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  color: var(--text-color);
+}
+
+.losers {
+  background-color: rgba(247, 223, 218, 0.96);
+}
+
+.player-grid-corner {
+  z-index: 3;
+  min-width: 11rem;
+  color: #314253;
+  background-color: rgba(202, 209, 216, 0.98);
+}
+
+.player-grid-header,
+.player-grid-row-header {
+  font-weight: 700;
+}
+
+.player-grid-axis-button {
+  width: 100%;
+  padding: 0.25rem 0.35rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.player-grid-axis-button:hover {
+  background-color: rgba(17, 37, 60, 0.06);
+}
+
+.player-grid-axis-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: -3px;
+}
+
+.player-grid-summary-header,
+.player-grid-summary-row-header,
+.player-grid-summary-cell,
+.player-grid-summary-corner {
+  font-weight: 700;
+  background-color: rgba(17, 37, 60, 0.05);
+}
+
+.player-grid-summary-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  color: #314253;
+  background-color: rgba(202, 209, 216, 0.98);
+}
+
+.player-grid-summary-row-header {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+}
+
+.player-grid-summary-corner {
+  color: var(--accent-color-strong);
+}
+
+.player-grid-summary-button {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0.35rem 0.45rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.player-grid-summary-button:hover {
+  background-color: rgba(17, 37, 60, 0.06);
+}
+
+.player-grid-summary-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: -3px;
+}
+
+.player-grid-cell {
+  padding: 0;
+  min-width: 3.5rem;
+  font-weight: 700;
+  color: var(--accent-color-strong);
+  background-color: rgba(255, 255, 255, 0.72);
+}
+
+.player-grid-cell-button,
+.player-grid-cell-static {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.player-grid-cell-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.player-grid-cell-button:hover {
+  background-color: rgba(180, 90, 34, 0.08);
+}
+
+.player-grid-cell-button:focus-visible {
+  outline: 3px solid rgba(180, 90, 34, 0.22);
+  outline-offset: -3px;
+}
+
+.player-grid-cell[data-empty="true"] {
+  color: rgba(17, 37, 60, 0.35);
+}
+
+.player-grid-cell[data-self="true"] {
+  color: rgba(17, 37, 60, 0.24);
+  background-color: rgba(17, 37, 60, 0.04);
+}
+
+.player-grid-table tr:last-child td,
+.player-grid-table tr:last-child th,
+.player-grid-table thead tr th {
+  border-bottom-width: 1px;
+}
+
+.player-grid-table tr td:last-child,
+.player-grid-table tr th:last-child {
+  border-right: 0;
+}
+
+@media (max-width: 640px) {
+  .player-grid-table {
+    min-width: 30rem;
+  }
+
+  .player-grid-table th,
+  .player-grid-table td {
+    padding: 0.55rem 0.65rem;
+  }
+}

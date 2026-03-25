@@ -227,22 +227,22 @@ export function calculateHistoricalMatches(
           processedMatch.playedAtTime < playedAt.getTime(),
       ),
     );
-    const winningPlayerSnapshot =
-      rankingAtMatchTime.find(
-        (rankedPlayer) => rankedPlayer.name === match.winningPlayer,
-      ) ?? {
-        difficultyLevel: 1 as DifficultyLevel,
-        name: match.winningPlayer,
-        rank: players.findIndex((player) => player.name === match.winningPlayer) + 1,
-      };
-    const losingPlayerSnapshot =
-      rankingAtMatchTime.find(
-        (rankedPlayer) => rankedPlayer.name === match.losingPlayer,
-      ) ?? {
-        difficultyLevel: 1 as DifficultyLevel,
-        name: match.losingPlayer,
-        rank: players.findIndex((player) => player.name === match.losingPlayer) + 1,
-      };
+    const winningPlayerSnapshot = rankingAtMatchTime.find(
+      (rankedPlayer) => rankedPlayer.name === match.winningPlayer,
+    ) ?? {
+      difficultyLevel: 1 as DifficultyLevel,
+      name: match.winningPlayer,
+      rank:
+        players.findIndex((player) => player.name === match.winningPlayer) + 1,
+    };
+    const losingPlayerSnapshot = rankingAtMatchTime.find(
+      (rankedPlayer) => rankedPlayer.name === match.losingPlayer,
+    ) ?? {
+      difficultyLevel: 1 as DifficultyLevel,
+      name: match.losingPlayer,
+      rank:
+        players.findIndex((player) => player.name === match.losingPlayer) + 1,
+    };
 
     const earnedPoints = losingPlayerSnapshot.difficultyLevel;
 
@@ -260,13 +260,12 @@ export function calculateHistoricalMatches(
           processedMatch.playedAtTime <= playedAt.getTime(),
       ),
     );
-    const winningPlayerAfterMatch =
-      rankingAfterMatch.find(
-        (rankedPlayer) => rankedPlayer.name === match.winningPlayer,
-      ) ?? {
-        ...winningPlayerSnapshot,
-        score: earnedPoints,
-      };
+    const winningPlayerAfterMatch = rankingAfterMatch.find(
+      (rankedPlayer) => rankedPlayer.name === match.winningPlayer,
+    ) ?? {
+      ...winningPlayerSnapshot,
+      score: earnedPoints,
+    };
 
     historicalMatches.push({
       datePlayedGmt: match.datePlayedGmt,

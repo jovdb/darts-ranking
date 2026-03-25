@@ -10,6 +10,7 @@ import {
 import { AddMatchForm } from "~/components/AddMatchForm";
 import { AddPlayerForm } from "~/components/AddPlayerForm";
 import { MatchHistoryRow } from "~/components/MatchHistoryRow";
+import { PlayerGrid } from "~/components/PlayerGrid";
 import { RankingList } from "~/components/RankingList";
 import { getRematchRestriction } from "~/services/match-rules";
 import {
@@ -256,6 +257,12 @@ export default function App() {
               </Show>
             </div>
           </section>
+
+          <PlayerGrid
+            historicalMatches={matchHistory()}
+            playedMatches={playedMatches()}
+            players={rankings()}
+          />
         </div>
 
         <Show when={isAddingMatch()}>

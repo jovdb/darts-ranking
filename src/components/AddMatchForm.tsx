@@ -191,7 +191,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
               )}
             >
               {(player) => (
-                <option value={player.name}>{formatSecondPlayerLabel(player)}</option>
+                <option value={player.name}>
+                  {formatSecondPlayerLabel(player)}
+                </option>
               )}
             </For>
           </select>
