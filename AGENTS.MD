@@ -28,6 +28,7 @@ This will be a Solid Start application to start darts games with opponents and c
   - ask to select the 2 players
   - show each selectable player as `#rank Name (Lx)`.
   - show the points the winner will earn, for example `Jo (+1pt)`.
+  - show a message when the selected players cannot play yet because they already played each other in the last 4 weeks.
   - allow to select the winner
   - At confirmed add match information to the state.
 - You can add animations to make it more attractive (you can use View Transition API)
@@ -60,8 +61,8 @@ The scoring system will be calculated from state using the following logic:
 
 - Use only data from the last 3 months so we have a sliding ranking
 - If someone wins a game, the player receive points equal to the opponent's difficulty level at that moment.
-  This adds the reward when beating more advanced players
-- If there was already a game with that opponent in the last 3 months, take the average of the scores with that opponent.
+  This adds rewards when beating more advanced players
+- A new game against the same opponent is only allowed after 4 weeks.
 - Calculate in chronological order so difficulty levels can be built from the ranking at that time.
 - Sum all played games per person to get the final score.
 - Order players by score in a ranking list.

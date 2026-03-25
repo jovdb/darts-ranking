@@ -27,15 +27,6 @@ const subtractMonths = (value: Date, months: number) => {
   return nextValue;
 };
 
-const average = (values: number[]) => {
-  if (values.length === 0) {
-    return 0;
-  }
-
-  const total = values.reduce((sum, value) => sum + value, 0);
-  return total / values.length;
-};
-
 const getRankingTieBreaker = (playerName: string) => {
   const existingValue = rankingTieBreakers.get(playerName);
 
@@ -55,17 +46,13 @@ const buildRankingsFromProcessedMatches = (
   const scoresByPlayer = new Map(players.map((player) => [player.name, 0]));
   const winsByPlayer = new Map(players.map((player) => [player.name, 0]));
   const lossesByPlayer = new Map(players.map((player) => [player.name, 0]));
-  const pointsByWinner = new Map<string, Map<string, number[]>>();
 
   for (const processedMatch of processedMatches) {
     const { earnedPoints, match } = processedMatch;
-    const winnerBuckets =
-      pointsByWinner.get(match.winningPlayer) ?? new Map<string, number[]>();
-    const opponentPoints = winnerBuckets.get(match.losingPlayer) ?? [];
-
-    opponentPoints.push(earnedPoints);
-    winnerBuckets.set(match.losingPlayer, opponentPoints);
-    pointsByWinner.set(match.winningPlayer, winnerBuckets);
+    scoresByPlayer.set(
+      match.winningPlayer,
+      (scoresByPlayer.get(match.winningPlayer) ?? 0) + earnedPoints,
+    );
 
     winsByPlayer.set(
       match.winningPlayer,
@@ -75,22 +62,6 @@ const buildRankingsFromProcessedMatches = (
       match.losingPlayer,
       (lossesByPlayer.get(match.losingPlayer) ?? 0) + 1,
     );
-  }
-
-  for (const player of players) {
-    const pointsByOpponent = pointsByWinner.get(player.name);
-
-    if (!pointsByOpponent) {
-      continue;
-    }
-
-    let totalScore = 0;
-
-    for (const scores of pointsByOpponent.values()) {
-      totalScore += average(scores);
-    }
-
-    scoresByPlayer.set(player.name, totalScore);
   }
 
   const rankedPlayers = players

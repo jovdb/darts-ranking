@@ -9,6 +9,7 @@ import {
 import { AddMatchForm } from "~/components/AddMatchForm";
 import { AddPlayerForm } from "~/components/AddPlayerForm";
 import { RankingList } from "~/components/RankingList";
+import { getRematchRestriction } from "~/services/match-rules";
 import { calculateRankings } from "~/services/ranking";
 import { createLocalAppStorage } from "~/services/storage";
 import { createEmptyAppState, type AppState } from "~/types/app-state";
@@ -134,6 +135,17 @@ export default function App() {
       return false;
     }
 
+    const rematchRestriction = getRematchRestriction(
+      playedMatches(),
+      trimmedFirstPlayerName,
+      trimmedSecondPlayerName,
+    );
+
+    if (rematchRestriction.isBlocked) {
+      setMatchError(rematchRestriction.message);
+      return false;
+    }
+
     const losingPlayer =
       trimmedWinnerName === trimmedFirstPlayerName
         ? trimmedSecondPlayerName
@@ -159,20 +171,11 @@ export default function App() {
   return (
     <main class="app-shell">
       <section class="app-panel">
-        <header class="app-intro">
-          <p class="eyebrow">Darts Ranking</p>
-          <h1>Ranking</h1>
-          <p class="copy">
-            Build a local roster, record matches, and keep the current ranking
-            in sync with each result.
-          </p>
-        </header>
-
         <div class="app-grid">
           <section class="card card-wide">
             <div class="card-header">
               <div>
-                <h2>Current ranking</h2>
+                <h1>Smartphoto darts ranking</h1>
                 <p class="card-copy">
                   Recorded matches: {playedMatches().length}
                 </p>
@@ -235,6 +238,7 @@ export default function App() {
                 error={matchError()}
                 onCancel={toggleMatchForm}
                 onAddMatch={handleAddMatch}
+                playedMatches={playedMatches()}
                 players={rankings()}
               />
             </section>

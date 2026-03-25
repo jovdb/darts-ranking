@@ -1,5 +1,8 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
 
+import type { PlayedMatch } from "~/types/app-state";
+
+import { getRematchRestriction } from "~/services/match-rules";
 import type { RankedPlayer } from "~/services/ranking";
 
 import "./AddMatchForm.css";
@@ -12,6 +15,7 @@ type AddMatchFormProps = {
     secondPlayerName: string,
     winnerName: string,
   ) => boolean;
+  playedMatches: PlayedMatch[];
   players: RankedPlayer[];
 };
 
@@ -67,6 +71,24 @@ export function AddMatchForm(props: AddMatchFormProps) {
       firstPlayerPoints: secondPlayer.difficultyLevel,
       secondPlayerPoints: firstPlayer.difficultyLevel,
     };
+  });
+  const rematchRestriction = createMemo(() => {
+    const firstPlayer = selectedFirstPlayer();
+    const secondPlayer = selectedSecondPlayer();
+
+    if (
+      !firstPlayer ||
+      !secondPlayer ||
+      firstPlayer.name === secondPlayer.name
+    ) {
+      return null;
+    }
+
+    return getRematchRestriction(
+      props.playedMatches,
+      firstPlayer.name,
+      secondPlayer.name,
+    );
   });
 
   const handleFirstPlayerChange = (nextPlayerName: string) => {
@@ -203,8 +225,18 @@ export function AddMatchForm(props: AddMatchFormProps) {
         )}
       </Show>
 
+      <Show when={rematchRestriction()?.isBlocked}>
+        <p class="restriction-message" role="status" aria-live="polite">
+          {rematchRestriction()?.message}
+        </p>
+      </Show>
+
       <div class="form-actions">
-        <button class="primary-button" type="submit">
+        <button
+          class="primary-button"
+          type="submit"
+          disabled={Boolean(rematchRestriction()?.isBlocked)}
+        >
           Confirm match
         </button>
         <button

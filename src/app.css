@@ -53,38 +53,6 @@ select {
   gap: 1.5rem;
 }
 
-.app-intro {
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  background-color: var(--panel-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 1.5rem;
-  box-shadow: 0 24px 60px rgba(17, 37, 60, 0.12);
-}
-
-.eyebrow {
-  margin: 0 0 1rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted-color);
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(2.5rem, 8vw, 4.75rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-}
-
-.copy {
-  margin: 1rem 0 0;
-  max-width: 42rem;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: var(--muted-color);
-}
-
 .app-grid {
   display: grid;
   gap: 1.25rem;
