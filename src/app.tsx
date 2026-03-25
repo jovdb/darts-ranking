@@ -274,12 +274,6 @@ export default function App() {
               >
                 {isAddingPlayer() ? "Cancel" : "Add player"}
               </button>
-
-              <Show when={players().length < 2}>
-                <p class="helper-text ranking-helper-text">
-                  Add at least two players before starting a match.
-                </p>
-              </Show>
             </div>
           </section>
 
@@ -428,7 +422,8 @@ export default function App() {
                     {selectedPlayerHistory()?.type === "all"
                       ? "results"
                       : selectedPlayerHistory()?.type}{" "}
-                    for {selectedPlayerHistory()?.playerName}, from recent to oldest.
+                    for {selectedPlayerHistory()?.playerName}, from recent to
+                    oldest.
                   </p>
                 </div>
               </div>
@@ -440,7 +435,8 @@ export default function App() {
                     {selectedPlayerHistory()?.playerName} has no recorded{" "}
                     {selectedPlayerHistory()?.type === "all"
                       ? "matches"
-                      : selectedPlayerHistory()?.type} yet.
+                      : selectedPlayerHistory()?.type}{" "}
+                    yet.
                   </p>
                 }
               >

@@ -170,7 +170,7 @@ export function PlayerGrid(props: PlayerGridProps) {
           when={props.players.length > 0}
           fallback={
             <p class="helper-text">
-              Add players to see the winner-versus-loser matrix.
+              No matches available yet.
             </p>
           }
         >

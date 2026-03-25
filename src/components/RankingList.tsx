@@ -11,14 +11,14 @@ type RankingListProps = {
 
 const getDifficultyLevelTitle = (difficultyLevel: RankedPlayer["difficultyLevel"]) => {
   if (difficultyLevel === 3) {
-    return "Level 3: In top 25% of ranking";
+    return "Level 3: When in top 25% of ranking";
   }
 
   if (difficultyLevel === 2) {
-    return "Level 2: In top 50% or ranking";
+    return "Level 2: When in top 50% of ranking";
   }
 
-  return "Level 1: In bottom 50% of ranking";
+  return "Level 1: Outside the current top-tier thresholds";
 };
 
 export function RankingList(props: RankingListProps) {
@@ -27,7 +27,7 @@ export function RankingList(props: RankingListProps) {
       when={props.rankings.length > 0}
       fallback={
         <p class="ranking-empty-state">
-          No players yet. Add the first competitor to start.
+          No players yet.
         </p>
       }
     >

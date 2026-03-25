@@ -74,20 +74,39 @@ We do not store ranking or difficulty information directly, so the scoring/ranki
 ## Difficulty Levels
 
 Each person will have a calculated difficulty level:
+The difficulty level is based on the ranking.
+We check the ranking level of the player, players with the same number of points have the same ranking level.
 
-- Top 25% best players in the ranking will have level 3 (L3).
-  - L3 becomes available only if there are at least 10 games played.
-- Top 50% best players in the ranking will have level 2 (L2).
-  - L2 becomes available only if there are at least 5 games.
-- The rest on the ranking has level 1 (L1).
+- By default everyone gets a difficulty level of 1 (L1).
+- If there are more than 4 different ranking levels/ points
+  - players with a ranking level <= 50% of the number of different ranking levels will get level 2 (L2)
+- If there are more than 5 different ranking levels/points
+  - players with a ranking level <= 25% of the number of different ranking levels will get level 3 (L3)
+
+Example 1:
+| Rank | Player | Points | Level |
+| --- | --- | --- | --- |
+| #1 | Jo | 2pts | L1 |
+| #2 | Dirk | 1pt | L1 |
+| #3 | Erin | 0pts | L1 |
+
+Example 2:
+| Rank | Player | Points | Level |
+| --- | --- | --- | --- |
+| #1 | Jo | 5pts | L3 |
+| #2 | Dirk | 4pts | L2 |
+| #2 | Erin | 4pts | L2 |
+| #3 | Jeroen | 3pts | L2 |
+| #4 | Hannes | 2pts | L1 |
+| #5 | Kelly | 0pts | L1 |
 
 ## Scoring Logic
 
 The scoring system will be calculated from state using the following logic:
 
 - Use only data from the last 3 months so we have a sliding ranking
-- If someone wins a game, the player receive points equal to the opponent's difficulty level at that moment.
-  This adds rewards when beating more advanced players
+- If someone wins a game, the player receives 1 point plus the difference between the opponent's difficulty level and the winner's difficulty level at that moment, with a minimum of 1 point.
+  This adds rewards when beating more advanced players while keeping every win worth at least 1 point.
 - A new game against the same opponent is only allowed after 4 weeks.
 - Calculate in chronological order so difficulty levels can be built from the ranking at that time.
 - Sum all played games per person to get the final score.

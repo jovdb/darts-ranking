@@ -3,7 +3,7 @@ import { For, Show, createMemo, createSignal } from "solid-js";
 import type { PlayedMatch } from "~/types/app-state";
 
 import { getRematchRestriction } from "~/services/match-rules";
-import type { RankedPlayer } from "~/services/ranking";
+import { calculateEarnedPoints, type RankedPlayer } from "~/services/ranking";
 
 import "./AddMatchForm.css";
 
@@ -95,8 +95,14 @@ export function AddMatchForm(props: AddMatchFormProps) {
     }
 
     return {
-      firstPlayerPoints: secondPlayer.difficultyLevel,
-      secondPlayerPoints: firstPlayer.difficultyLevel,
+      firstPlayerPoints: calculateEarnedPoints(
+        firstPlayer.difficultyLevel,
+        secondPlayer.difficultyLevel,
+      ),
+      secondPlayerPoints: calculateEarnedPoints(
+        secondPlayer.difficultyLevel,
+        firstPlayer.difficultyLevel,
+      ),
     };
   });
   const rematchRestriction = createMemo(() => {

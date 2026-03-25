@@ -268,7 +268,7 @@ export function RankingGraph(props: RankingGraphProps) {
         when={props.rankings.length > 0 && props.timeline.length > 0}
         fallback={
           <p class="helper-text">
-            Add played matches to see ranking movement over time.
+            No matches available yet.
           </p>
         }
       >
