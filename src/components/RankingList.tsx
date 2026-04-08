@@ -6,7 +6,10 @@ import { BinIcon } from "./BinIcon";
 import "./RankingList.css";
 
 type RankingListProps = {
-  onSelectPlayerHistory: (playerName: string, type: "all" | "losses" | "wins") => void;
+  onSelectPlayerHistory: (
+    playerName: string,
+    type: "all" | "losses" | "wins",
+  ) => void;
   rankings: RankedPlayer[];
   onDeletePlayer?: (playerName: string) => void;
 };
@@ -29,16 +32,9 @@ export function RankingList(props: RankingListProps) {
   return (
     <Show
       when={props.rankings.length > 0}
-      fallback={
-        <p class="ranking-empty-state">
-          No players yet.
-        </p>
-      }
+      fallback={<p class="ranking-empty-state">No players yet.</p>}
     >
-      <div
-        class="ranking-list-container"
-        onClick={() => setContextMenu(null)}
-      >
+      <div class="ranking-list-container" onClick={() => setContextMenu(null)}>
         <ul class="ranking-list">
           <For each={props.rankings}>
             {(player) => (
@@ -128,7 +124,8 @@ export function RankingList(props: RankingListProps) {
                 setContextMenu(null);
               }}
             >
-              <BinIcon />&nbsp;Delete player
+              <BinIcon />
+              &nbsp;Delete player
             </button>
           </div>
         </Show>

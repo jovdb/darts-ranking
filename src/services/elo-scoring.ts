@@ -50,7 +50,10 @@ export const calculateSoloTeamMatchPreview = (
   let totalExpectedSoloScore = 0;
 
   for (const loser of teamPlayers) {
-    const expectedSoloScore = calculateExpectedSoloScore(soloPlayer.score, loser.score);
+    const expectedSoloScore = calculateExpectedSoloScore(
+      soloPlayer.score,
+      loser.score,
+    );
     totalExpectedSoloScore += expectedSoloScore;
 
     // Winner's gain from this specific loser
@@ -74,11 +77,14 @@ export const calculateSoloTeamMatchPreview = (
     }
   }
 
-  const averageExpectedSoloScore = teamPlayers.length > 0 ? totalExpectedSoloScore / teamPlayers.length : 0;
+  const averageExpectedSoloScore =
+    teamPlayers.length > 0 ? totalExpectedSoloScore / teamPlayers.length : 0;
   const averageTeamExpectedScore = 1 - averageExpectedSoloScore;
-  const averageTeamRating = teamPlayers.length > 0
-    ? teamPlayers.reduce((sum, player) => sum + player.score, 0) / teamPlayers.length
-    : DEFAULT_ELO_RATING;
+  const averageTeamRating =
+    teamPlayers.length > 0
+      ? teamPlayers.reduce((sum, player) => sum + player.score, 0) /
+        teamPlayers.length
+      : DEFAULT_ELO_RATING;
 
   return {
     expectedSoloScore: averageExpectedSoloScore,

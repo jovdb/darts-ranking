@@ -2,8 +2,11 @@
   position: relative;
   border: 1px solid rgba(17, 37, 60, 0.08);
   border-radius: 1rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(244, 248, 250, 0.94) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(244, 248, 250, 0.94) 100%
+  );
 }
 
 .ranking-graph-scroll {
@@ -41,7 +44,9 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 3;
-  transition: opacity 120ms ease, stroke-width 120ms ease;
+  transition:
+    opacity 120ms ease,
+    stroke-width 120ms ease;
   pointer-events: stroke;
 }
 
@@ -52,7 +57,9 @@
 }
 
 .ranking-graph-point {
-  transition: opacity 120ms ease, r 120ms ease;
+  transition:
+    opacity 120ms ease,
+    r 120ms ease;
 }
 
 .ranking-graph-tick-label,
@@ -144,7 +151,9 @@
   border: 1px solid rgba(17, 37, 60, 0.08);
   border-radius: 0.85rem;
   background-color: rgba(255, 255, 255, 0.68);
-  transition: background-color 120ms ease, opacity 120ms ease;
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease;
 }
 
 .ranking-graph-legend-item:hover {

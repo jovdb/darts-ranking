@@ -4,10 +4,7 @@ import {
   getKFactor,
   calculateExpectedSoloScore,
 } from "~/services/elo-scoring";
-import {
-  formatScore,
-  type RankedPlayer,
-} from "~/services/ranking";
+import { formatScore, type RankedPlayer } from "~/services/ranking";
 
 import "./AddMatchForm.css";
 import { BinIcon } from "./BinIcon";
@@ -35,38 +32,53 @@ const formatRatingChange = (value: number) => {
   return `${prefix}${formatScore(value)} rating`;
 };
 
-const getRatingChangeTooltip = (playerName: string, winnerName: string, selectedPlayers: RankedPlayer[]) => {
-  const player = selectedPlayers.find(p => p.name === playerName);
-  const winner = selectedPlayers.find(p => p.name === winnerName);
-  
+const getRatingChangeTooltip = (
+  playerName: string,
+  winnerName: string,
+  selectedPlayers: RankedPlayer[],
+) => {
+  const player = selectedPlayers.find((p) => p.name === playerName);
+  const winner = selectedPlayers.find((p) => p.name === winnerName);
+
   if (!player || !winner) return "";
-  
+
   if (playerName === winnerName) {
     // Winner's tooltip - shows gains from each opponent
     const opponentGains = selectedPlayers
-      .filter(p => p.name !== winnerName)
-      .map(opponent => {
-        const expectedScore = calculateExpectedSoloScore(winner.score, opponent.score);
+      .filter((p) => p.name !== winnerName)
+      .map((opponent) => {
+        const expectedScore = calculateExpectedSoloScore(
+          winner.score,
+          opponent.score,
+        );
         const kFactor = getKFactor(winner.matchCount);
         const rawGain = kFactor * (1 - expectedScore);
         const gain = rawGain > 0 && rawGain < 1 ? 1 : Math.round(rawGain);
         return `${gain}pts vs ${opponent.name}`;
       });
-    
-    const totalGain = opponentGains.reduce((sum, gain) => sum + parseInt(gain.split('pts')[0]), 0);
+
+    const totalGain = opponentGains.reduce(
+      (sum, gain) => sum + parseInt(gain.split("pts")[0]),
+      0,
+    );
     return `Winner gains: ${opponentGains.join(" + ")} = ${totalGain}pts total`;
   } else {
     // Loser's tooltip - shows loss calculation
-    const expectedScore = calculateExpectedSoloScore(winner.score, player.score);
+    const expectedScore = calculateExpectedSoloScore(
+      winner.score,
+      player.score,
+    );
     const kFactor = getKFactor(player.matchCount);
     const loss = Math.round(kFactor * (expectedScore - 1));
-    
+
     return `Loser: K=${kFactor} × (${(expectedScore * 100).toFixed(1)}% - 100%) = ${loss}pts`;
   }
 };
 
 export function AddMatchForm(props: AddMatchFormProps) {
-  const [selectedPlayerNames, setSelectedPlayerNames] = createSignal<string[]>([]);
+  const [selectedPlayerNames, setSelectedPlayerNames] = createSignal<string[]>(
+    [],
+  );
   const [playerToAdd, setPlayerToAdd] = createSignal("");
   const [winnerName, setWinnerName] = createSignal("");
 
@@ -232,9 +244,13 @@ export function AddMatchForm(props: AddMatchFormProps) {
           <ul class="winner-preview-list">
             <For each={ratingPreviewRows()}>
               {(row) => (
-                <li 
+                <li
                   class="winner-preview-item"
-                  title={getRatingChangeTooltip(row.label, winnerName(), selectedPlayers())}
+                  title={getRatingChangeTooltip(
+                    row.label,
+                    winnerName(),
+                    selectedPlayers(),
+                  )}
                 >
                   <span>{row.label}</span>
                   <span

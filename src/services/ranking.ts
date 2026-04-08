@@ -118,11 +118,14 @@ const prepareMatches = (
 
   return playedMatches
     .map((match, sourceIndex) => ({
-      losingPlayers: [...new Set(match.losingPlayers)].filter((losingPlayer) => {
-        return (
-          playerNames.has(losingPlayer) && losingPlayer !== match.winningPlayer
-        );
-      }),
+      losingPlayers: [...new Set(match.losingPlayers)].filter(
+        (losingPlayer) => {
+          return (
+            playerNames.has(losingPlayer) &&
+            losingPlayer !== match.winningPlayer
+          );
+        },
+      ),
       match,
       playedAt: new Date(match.datePlayedGmt),
       sourceIndex,
@@ -244,8 +247,12 @@ const toHistoricalMatches = (
     {
       datePlayedGmt: progressMatch.match.datePlayedGmt,
       earnedPoints: progressMatch.earnedPoints,
-      losingPlayers: progressMatch.losingPlayersBeforeMatch.map((losingPlayerProgress) => losingPlayerProgress.player),
-      losingPlayerRatingChanges: progressMatch.losingPlayersBeforeMatch.map((losingPlayerProgress) => losingPlayerProgress.ratingChange),
+      losingPlayers: progressMatch.losingPlayersBeforeMatch.map(
+        (losingPlayerProgress) => losingPlayerProgress.player,
+      ),
+      losingPlayerRatingChanges: progressMatch.losingPlayersBeforeMatch.map(
+        (losingPlayerProgress) => losingPlayerProgress.ratingChange,
+      ),
       winnerTotalScore: progressMatch.winnerTotalScoreAfterMatch,
       winningPlayer: progressMatch.winningPlayerBeforeMatch,
     },
@@ -303,7 +310,9 @@ export function* generateRankingProgress(
 
     const matchPreview = calculateSoloTeamMatchPreview(
       winningPlayerBeforeMatch,
-      losingPlayersBeforeMatch.map((losingPlayerProgress) => losingPlayerProgress.player),
+      losingPlayersBeforeMatch.map(
+        (losingPlayerProgress) => losingPlayerProgress.player,
+      ),
     );
     const winningPlayerTotals = totalsByPlayerName.get(
       preparedMatch.match.winningPlayer,
@@ -367,8 +376,8 @@ export function calculateHistoricalMatches(
   players: Player[],
   playedMatches: PlayedMatch[],
 ): HistoricalMatch[] {
-  return collectProgress(players, playedMatches).matches
-    .flatMap(toHistoricalMatches)
+  return collectProgress(players, playedMatches)
+    .matches.flatMap(toHistoricalMatches)
     .reverse();
 }
 

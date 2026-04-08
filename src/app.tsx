@@ -62,12 +62,16 @@ export default function App() {
       }
 
       if (selectedHistory.type === "losses") {
-        return match.losingPlayers.some((loser) => loser.name === selectedHistory.playerName);
+        return match.losingPlayers.some(
+          (loser) => loser.name === selectedHistory.playerName,
+        );
       }
 
       return (
         match.winningPlayer.name === selectedHistory.playerName ||
-        match.losingPlayers.some((loser) => loser.name === selectedHistory.playerName)
+        match.losingPlayers.some(
+          (loser) => loser.name === selectedHistory.playerName,
+        )
       );
     });
   });
@@ -184,7 +188,11 @@ export default function App() {
 
     const playerNames = new Set(players().map((player) => player.name));
 
-    if (!uniqueSelectedPlayerNames.every((playerName) => playerNames.has(playerName))) {
+    if (
+      !uniqueSelectedPlayerNames.every((playerName) =>
+        playerNames.has(playerName),
+      )
+    ) {
       setMatchError("All selected players must still exist in the roster.");
       return false;
     }
@@ -213,16 +221,22 @@ export default function App() {
   const handleDeleteMatch = (matchIndex: number) => {
     setAppState((currentState) => ({
       ...currentState,
-      playedMatches: currentState.playedMatches.filter((_, index) => index !== matchIndex),
+      playedMatches: currentState.playedMatches.filter(
+        (_, index) => index !== matchIndex,
+      ),
     }));
   };
 
   const handleDeletePlayer = (playerName: string) => {
     setAppState((currentState) => ({
       ...currentState,
-      players: currentState.players.filter((player) => player.name !== playerName),
+      players: currentState.players.filter(
+        (player) => player.name !== playerName,
+      ),
       playedMatches: currentState.playedMatches.filter(
-        (match) => match.winningPlayer !== playerName && !match.losingPlayers.includes(playerName)
+        (match) =>
+          match.winningPlayer !== playerName &&
+          !match.losingPlayers.includes(playerName),
       ),
     }));
   };
@@ -271,9 +285,9 @@ export default function App() {
             </div>
           </section>
 
-          <RankingGraph 
-            rankings={rankings()} 
-            timeline={rankingTimeline()} 
+          <RankingGraph
+            rankings={rankings()}
+            timeline={rankingTimeline()}
             onDeleteMatch={handleDeleteMatch}
           />
 

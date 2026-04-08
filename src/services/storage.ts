@@ -59,7 +59,9 @@ const isPlayedMatch = (value: unknown): value is PlayedMatch =>
   Array.isArray(value.losingPlayers) &&
   value.losingPlayers.every((playerName) => typeof playerName === "string");
 
-const isAnyPlayedMatch = (value: unknown): value is PlayedMatch | LegacyPlayedMatch =>
+const isAnyPlayedMatch = (
+  value: unknown,
+): value is PlayedMatch | LegacyPlayedMatch =>
   isPlayedMatch(value) || isLegacyPlayedMatch(value);
 
 const normalizePlayedMatch = (

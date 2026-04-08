@@ -50,7 +50,7 @@ export function PlayerGrid(props: PlayerGridProps) {
     for (const player of props.players) {
       // Count matches where this player was the winner
       const matchesWon = props.playedMatches.filter(
-        (match) => match.winningPlayer === player.name
+        (match) => match.winningPlayer === player.name,
       ).length;
       totals.set(player.name, matchesWon);
     }
@@ -80,7 +80,9 @@ export function PlayerGrid(props: PlayerGridProps) {
 
     for (const player of props.players) {
       const matchesPlayed = props.playedMatches.filter(
-        (match) => match.winningPlayer === player.name || match.losingPlayers.includes(player.name)
+        (match) =>
+          match.winningPlayer === player.name ||
+          match.losingPlayers.includes(player.name),
       ).length;
       totals.set(player.name, matchesPlayed);
     }
@@ -122,7 +124,9 @@ export function PlayerGrid(props: PlayerGridProps) {
         return match.winningPlayer.name === summary.playerName;
       }
 
-      return match.losingPlayers.some((loser) => loser.name === summary.playerName);
+      return match.losingPlayers.some(
+        (loser) => loser.name === summary.playerName,
+      );
     });
   });
 
@@ -166,19 +170,15 @@ export function PlayerGrid(props: PlayerGridProps) {
           <div>
             <h2>Matches grid</h2>
             <p class="card-copy">
-              Winners across the top, losers down the side, with each cell showing
-              recorded wins for that matchup.
+              Winners across the top, losers down the side, with each cell
+              showing recorded wins for that matchup.
             </p>
           </div>
         </div>
 
         <Show
           when={props.players.length > 0}
-          fallback={
-            <p class="helper-text">
-              No matches available yet.
-            </p>
-          }
+          fallback={<p class="helper-text">No matches available yet.</p>}
         >
           <div class="player-grid-scroll">
             <table class="player-grid-table">
@@ -240,7 +240,10 @@ export function PlayerGrid(props: PlayerGridProps) {
                                     class="player-grid-cell-button"
                                     type="button"
                                     onClick={() =>
-                                      openPlayerSummaryHistory(winner.name, "all")
+                                      openPlayerSummaryHistory(
+                                        winner.name,
+                                        "all",
+                                      )
                                     }
                                   >
                                     *
@@ -318,173 +321,175 @@ export function PlayerGrid(props: PlayerGridProps) {
       </section>
 
       <Show when={isViewingAllMatches()}>
-          <div
-            class="popup-backdrop"
-            role="presentation"
-            onClick={closeAllMatchesHistory}
+        <div
+          class="popup-backdrop"
+          role="presentation"
+          onClick={closeAllMatchesHistory}
+        >
+          <section
+            class="popup-card popup-card-wide"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="grid-all-matches-history-title"
+            onClick={(event) => event.stopPropagation()}
           >
-            <section
-              class="popup-card popup-card-wide"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="grid-all-matches-history-title"
-              onClick={(event) => event.stopPropagation()}
+            <div class="card-header popup-header">
+              <div>
+                <h2 id="grid-all-matches-history-title">Played matches</h2>
+                <p class="card-copy">
+                  Full list of recorded results from recent to oldest.
+                </p>
+              </div>
+            </div>
+
+            <Show
+              when={props.historicalMatches.length > 0}
+              fallback={
+                <p class="helper-text">No matches have been recorded yet.</p>
+              }
             >
-              <div class="card-header popup-header">
-                <div>
-                  <h2 id="grid-all-matches-history-title">Played matches</h2>
-                  <p class="card-copy">
-                    Full list of recorded results from recent to oldest.
-                  </p>
-                </div>
-              </div>
+              <ul class="match-history-list">
+                <For each={props.historicalMatches}>
+                  {(match) => <MatchHistoryRow match={match} />}
+                </For>
+              </ul>
+            </Show>
 
-              <Show
-                when={props.historicalMatches.length > 0}
-                fallback={
-                  <p class="helper-text">No matches have been recorded yet.</p>
-                }
+            <div class="popup-footer">
+              <button
+                class="secondary-button popup-footer-button"
+                type="button"
+                onClick={closeAllMatchesHistory}
               >
-                <ul class="match-history-list">
-                  <For each={props.historicalMatches}>
-                    {(match) => <MatchHistoryRow match={match} />}
-                  </For>
-                </ul>
-              </Show>
-
-              <div class="popup-footer">
-                <button
-                  class="secondary-button popup-footer-button"
-                  type="button"
-                  onClick={closeAllMatchesHistory}
-                >
-                  Close
-                </button>
-              </div>
-            </section>
-          </div>
+                Close
+              </button>
+            </div>
+          </section>
+        </div>
       </Show>
 
       <Show when={selectedMatchup() !== null}>
-          <div
-            class="popup-backdrop"
-            role="presentation"
-            onClick={closeMatchupHistory}
+        <div
+          class="popup-backdrop"
+          role="presentation"
+          onClick={closeMatchupHistory}
+        >
+          <section
+            class="popup-card popup-card-wide"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="matchup-history-title"
+            onClick={(event) => event.stopPropagation()}
           >
-            <section
-              class="popup-card popup-card-wide"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="matchup-history-title"
-              onClick={(event) => event.stopPropagation()}
+            <div class="card-header popup-header">
+              <div>
+                <h2 id="matchup-history-title">
+                  {selectedMatchup()?.winnerName} beat{" "}
+                  {selectedMatchup()?.loserName}
+                </h2>
+                <p class="card-copy">
+                  Full list of recorded results for this winner and loser
+                  pairing, from recent to oldest.
+                </p>
+              </div>
+            </div>
+
+            <Show
+              when={selectedMatchupHistory().length > 0}
+              fallback={
+                <p class="helper-text">
+                  No matches have been recorded for this matchup yet.
+                </p>
+              }
             >
-              <div class="card-header popup-header">
-                <div>
-                  <h2 id="matchup-history-title">
-                    {selectedMatchup()?.winnerName} beat{" "}
-                    {selectedMatchup()?.loserName}
-                  </h2>
-                  <p class="card-copy">
-                    Full list of recorded results for this winner and loser
-                    pairing, from recent to oldest.
-                  </p>
-                </div>
-              </div>
+              <ul class="match-history-list">
+                <For each={selectedMatchupHistory()}>
+                  {(match) => <MatchHistoryRow match={match} />}
+                </For>
+              </ul>
+            </Show>
 
-              <Show
-                when={selectedMatchupHistory().length > 0}
-                fallback={
-                  <p class="helper-text">
-                    No matches have been recorded for this matchup yet.
-                  </p>
-                }
+            <div class="popup-footer">
+              <button
+                class="secondary-button popup-footer-button"
+                type="button"
+                onClick={closeMatchupHistory}
               >
-                <ul class="match-history-list">
-                  <For each={selectedMatchupHistory()}>
-                    {(match) => <MatchHistoryRow match={match} />}
-                  </For>
-                </ul>
-              </Show>
-
-              <div class="popup-footer">
-                <button
-                  class="secondary-button popup-footer-button"
-                  type="button"
-                  onClick={closeMatchupHistory}
-                >
-                  Close
-                </button>
-              </div>
-            </section>
-          </div>
+                Close
+              </button>
+            </div>
+          </section>
+        </div>
       </Show>
 
       <Show when={selectedPlayerSummary() !== null}>
-          <div
-            class="popup-backdrop"
-            role="presentation"
-            onClick={closePlayerSummaryHistory}
+        <div
+          class="popup-backdrop"
+          role="presentation"
+          onClick={closePlayerSummaryHistory}
+        >
+          <section
+            class="popup-card popup-card-wide"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="player-summary-history-title"
+            onClick={(event) => event.stopPropagation()}
           >
-            <section
-              class="popup-card popup-card-wide"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="player-summary-history-title"
-              onClick={(event) => event.stopPropagation()}
+            <div class="card-header popup-header">
+              <div>
+                <h2 id="player-summary-history-title">
+                  {selectedPlayerSummary()?.playerName}{" "}
+                  {selectedPlayerSummary()?.type === "all"
+                    ? "matches"
+                    : selectedPlayerSummary()?.type}
+                </h2>
+                <p class="card-copy">
+                  Full list of recorded{" "}
+                  {selectedPlayerSummary()?.type === "all"
+                    ? "matches"
+                    : selectedPlayerSummary()?.type}{" "}
+                  for {selectedPlayerSummary()?.playerName}, from recent to
+                  oldest.
+                </p>
+              </div>
+            </div>
+
+            <Show
+              when={selectedPlayerSummaryHistory().length > 0}
+              fallback={
+                <p class="helper-text">
+                  No{" "}
+                  {selectedPlayerSummary()?.type === "all"
+                    ? "matches"
+                    : selectedPlayerSummary()?.type}{" "}
+                  have been recorded for {selectedPlayerSummary()?.playerName}{" "}
+                  yet.
+                </p>
+              }
             >
-              <div class="card-header popup-header">
-                <div>
-                  <h2 id="player-summary-history-title">
-                    {selectedPlayerSummary()?.playerName}{" "}
-                    {selectedPlayerSummary()?.type === "all"
-                      ? "matches"
-                      : selectedPlayerSummary()?.type}
-                  </h2>
-                  <p class="card-copy">
-                    Full list of recorded{" "}
-                    {selectedPlayerSummary()?.type === "all"
-                      ? "matches"
-                      : selectedPlayerSummary()?.type} for{" "}
-                    {selectedPlayerSummary()?.playerName}, from recent to oldest.
-                  </p>
-                </div>
-              </div>
+              <ul class="match-history-list">
+                <For each={selectedPlayerSummaryHistory()}>
+                  {(match) => (
+                    <MatchHistoryRow
+                      focusedPlayerName={selectedPlayerSummary()?.playerName}
+                      match={match}
+                    />
+                  )}
+                </For>
+              </ul>
+            </Show>
 
-              <Show
-                when={selectedPlayerSummaryHistory().length > 0}
-                fallback={
-                  <p class="helper-text">
-                    No{" "}
-                    {selectedPlayerSummary()?.type === "all"
-                      ? "matches"
-                      : selectedPlayerSummary()?.type} have been recorded for{" "}
-                    {selectedPlayerSummary()?.playerName} yet.
-                  </p>
-                }
+            <div class="popup-footer">
+              <button
+                class="secondary-button popup-footer-button"
+                type="button"
+                onClick={closePlayerSummaryHistory}
               >
-                <ul class="match-history-list">
-                  <For each={selectedPlayerSummaryHistory()}>
-                    {(match) => (
-                      <MatchHistoryRow
-                        focusedPlayerName={selectedPlayerSummary()?.playerName}
-                        match={match}
-                      />
-                    )}
-                  </For>
-                </ul>
-              </Show>
-
-              <div class="popup-footer">
-                <button
-                  class="secondary-button popup-footer-button"
-                  type="button"
-                  onClick={closePlayerSummaryHistory}
-                >
-                  Close
-                </button>
-              </div>
-            </section>
-          </div>
+                Close
+              </button>
+            </div>
+          </section>
+        </div>
       </Show>
     </>
   );

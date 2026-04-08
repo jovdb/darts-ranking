@@ -15,10 +15,12 @@ This is a fun way to keep track of darts matches among players using a smart rat
 ### Match Types
 
 **Head-to-Head (1 vs 1):**
+
 - Higher-rated player wins: Small rating changes
 - Lower-rated player wins: Big rating changes (surprise victory!)
 
 **Team Matches (1 vs Multiple):**
+
 - Winner gets points for beating each opponent individually
 - Each loser loses points based on their personal matchup
 - For bigger groups (3+ players), all rating changes are scaled down to keep things fair
