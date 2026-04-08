@@ -3,7 +3,6 @@ export const PLACEMENT_MATCH_LIMIT = 10;
 export const PLACEMENT_K_FACTOR = 60;
 export const VETERAN_K_FACTOR = 32;
 export const ELO_DIVISOR = 400;
-export const ELO_TEAM_SYNERGY_PER_EXTRA_PLAYER = 100;
 export const MINIMUM_WIN_GAIN = 1;
 
 export type EloParticipant = {
@@ -26,19 +25,6 @@ export const getKFactor = (matchCount: number) => {
     : VETERAN_K_FACTOR;
 };
 
-export const calculateVirtualTeamRating = (teamRatings: number[]) => {
-  if (teamRatings.length === 0) {
-    return DEFAULT_ELO_RATING;
-  }
-
-  const averageTeamRating =
-    teamRatings.reduce((sum, rating) => sum + rating, 0) / teamRatings.length;
-  const synergyFactor =
-    (teamRatings.length - 1) * ELO_TEAM_SYNERGY_PER_EXTRA_PLAYER;
-
-  return averageTeamRating + synergyFactor;
-};
-
 export const calculateExpectedSoloScore = (
   soloRating: number,
   teamRating: number,
@@ -58,31 +44,37 @@ export const calculateSoloTeamMatchPreview = (
   soloPlayer: EloParticipant,
   teamPlayers: EloParticipant[],
 ): EloMatchPreview => {
-  const teamRating = calculateVirtualTeamRating(
-    teamPlayers.map((player) => player.score),
-  );
-  const expectedSoloScore = calculateExpectedSoloScore(
-    soloPlayer.score,
-    teamRating,
-  );
-  const teamExpectedScore = 1 - expectedSoloScore;
   const soloKFactor = getKFactor(soloPlayer.matchCount);
-  const soloRatingChange = normalizeWinnerGain(
-    soloKFactor * (1 - expectedSoloScore),
-  );
-  const teamSize = Math.max(teamPlayers.length, 1);
-  const losingPlayerChanges = teamPlayers.map((player) => {
-    const losingPlayerKFactor = getKFactor(player.matchCount);
+  let totalSoloRatingChange = 0;
+  const losingPlayerChanges: number[] = [];
+  let totalExpectedSoloScore = 0;
 
-    return (losingPlayerKFactor / teamSize) * (0 - teamExpectedScore);
-  });
+  for (const loser of teamPlayers) {
+    const expectedSoloScore = calculateExpectedSoloScore(soloPlayer.score, loser.score);
+    totalExpectedSoloScore += expectedSoloScore;
+    
+    // Winner's gain from this specific loser
+    const gainFromThisLoser = soloKFactor * (1 - expectedSoloScore);
+    totalSoloRatingChange += normalizeWinnerGain(gainFromThisLoser);
+    
+    // Loser's change
+    const loserKFactor = getKFactor(loser.matchCount);
+    const loserChange = loserKFactor * (expectedSoloScore - 1); // Negative for loss
+    losingPlayerChanges.push(loserChange);
+  }
+
+  const averageExpectedSoloScore = teamPlayers.length > 0 ? totalExpectedSoloScore / teamPlayers.length : 0;
+  const averageTeamExpectedScore = 1 - averageExpectedSoloScore;
+  const averageTeamRating = teamPlayers.length > 0 
+    ? teamPlayers.reduce((sum, player) => sum + player.score, 0) / teamPlayers.length 
+    : DEFAULT_ELO_RATING;
 
   return {
-    expectedSoloScore,
+    expectedSoloScore: averageExpectedSoloScore,
     losingPlayerChanges,
     soloKFactor,
-    soloRatingChange,
-    teamExpectedScore,
-    teamRating,
+    soloRatingChange: totalSoloRatingChange,
+    teamExpectedScore: averageTeamExpectedScore,
+    teamRating: averageTeamRating,
   };
 };

@@ -8,10 +8,12 @@ import {
 } from "~/services/ranking";
 
 import "./RankingGraph.css";
+import { BinIcon } from "./BinIcon";
 
 type RankingGraphProps = {
   rankings: RankedPlayer[];
   timeline: RankingTimelineSnapshot[];
+  onDeleteMatch?: (matchIndex: number) => void;
 };
 
 type GraphPoint = {
@@ -78,13 +80,13 @@ const createLinePath = (points: GraphPoint[]) => {
     const cp1x = prev.x + dx * 0.5;
     const cp1y = prev.y + dy * 0.0;
     const cp2x = curr.x - dx * 0.5;
-    const cp2y = curr.y - dy * 0.00;
+    const cp2y = curr.y - dy * 0.0;
 
     path += ` C${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curr.x} ${curr.y}`;
   }
 
   return path;
-};;
+};
 
 const getStepX = (stepIndex: number, stepCount: number, plotWidth: number) => {
   return (
@@ -95,15 +97,20 @@ const getStepX = (stepIndex: number, stepCount: number, plotWidth: number) => {
 
 export function RankingGraph(props: RankingGraphProps) {
   const [activePoint, setActivePoint] = createSignal<GraphPoint | null>(null);
-  const [activeMatchIndex, setActiveMatchIndex] = createSignal<number | null>(null);
+  const [activeMatchIndex, setActiveMatchIndex] = createSignal<number | null>(
+    null,
+  );
   const [hoveredPlayerName, setHoveredPlayerName] = createSignal<string | null>(
     null,
   );
+  const [contextMenu, setContextMenu] = createSignal<{
+    x: number;
+    y: number;
+    matchIndex: number;
+  } | null>(null);
 
-  const plotWidth =
-    CHART_WIDTH - CHART_PADDING.left - CHART_PADDING.right;
-  const plotHeight =
-    CHART_HEIGHT - CHART_PADDING.top - CHART_PADDING.bottom;
+  const plotWidth = CHART_WIDTH - CHART_PADDING.left - CHART_PADDING.right;
+  const plotHeight = CHART_HEIGHT - CHART_PADDING.top - CHART_PADDING.bottom;
   const graphStepCount = () => props.timeline.length + 1;
 
   const scoreRange = createMemo(() => {
@@ -155,36 +162,36 @@ export function RankingGraph(props: RankingGraphProps) {
         },
       ];
 
-      points.push(...props.timeline.map((snapshot, index) => {
-        const ranking = snapshot.rankings.find(
-          (rankedPlayer) => rankedPlayer.name === player.name,
-        ) ?? {
-          isInPlacement: true,
-          kFactor: 60,
-          losses: 0,
-          matchCount: 0,
-          name: player.name,
-          rank: startingRank,
-          score: player.score,
-          wins: 0,
-        };
-        const normalizedScore =
-          (ranking.score - scoreRange().min) /
-          (scoreRange().max - scoreRange().min || 1);
+      points.push(
+        ...props.timeline.map((snapshot, index) => {
+          const ranking = snapshot.rankings.find(
+            (rankedPlayer) => rankedPlayer.name === player.name,
+          ) ?? {
+            isInPlacement: true,
+            kFactor: 60,
+            losses: 0,
+            matchCount: 0,
+            name: player.name,
+            rank: startingRank,
+            score: player.score,
+            wins: 0,
+          };
+          const normalizedScore =
+            (ranking.score - scoreRange().min) /
+            (scoreRange().max - scoreRange().min || 1);
 
-        return {
-          color: player.color,
-          datePlayedGmt: snapshot.datePlayedGmt,
-          matchIndex: snapshot.matchIndex,
-          playerName: player.name,
-          rank: ranking.rank,
-          score: ranking.score,
-          x:
-            CHART_PADDING.left +
-            ((index + 1) * xStep),
-          y: CHART_PADDING.top + plotHeight - normalizedScore * plotHeight,
-        } satisfies GraphPoint;
-      }));
+          return {
+            color: player.color,
+            datePlayedGmt: snapshot.datePlayedGmt,
+            matchIndex: snapshot.matchIndex,
+            playerName: player.name,
+            rank: ranking.rank,
+            score: ranking.score,
+            x: CHART_PADDING.left + (index + 1) * xStep,
+            y: CHART_PADDING.top + plotHeight - normalizedScore * plotHeight,
+          } satisfies GraphPoint;
+        }),
+      );
 
       return {
         color: player.color,
@@ -206,17 +213,19 @@ export function RankingGraph(props: RankingGraphProps) {
       tickValues.add(value);
     }
 
-    return [...tickValues].sort((left, right) => left - right).map((value) => {
-      const normalizedValue =
-        (value - currentScoreRange.min) /
-        (currentScoreRange.max - currentScoreRange.min || 1);
+    return [...tickValues]
+      .sort((left, right) => left - right)
+      .map((value) => {
+        const normalizedValue =
+          (value - currentScoreRange.min) /
+          (currentScoreRange.max - currentScoreRange.min || 1);
 
-      return {
-        label: String(value),
-        value,
-        y: CHART_PADDING.top + plotHeight - normalizedValue * plotHeight,
-      };
-    });
+        return {
+          label: String(value),
+          value,
+          y: CHART_PADDING.top + plotHeight - normalizedValue * plotHeight,
+        };
+      });
   });
 
   const xTicks = createMemo(() => {
@@ -257,10 +266,17 @@ export function RankingGraph(props: RankingGraphProps) {
       const currentX = getStepX(stepIndex, stepCount, plotWidth);
       const width = Math.max(currentX - previousX, 1);
 
+      // Create detailed tooltip content
+      const playerChanges = snapshot.playerRatingChanges.map((change) => {
+        const prefix = change.ratingChange >= 0 ? "+" : "";
+        return `${change.playerName}: ${prefix}${formatScore(change.ratingChange)}`;
+      });
+
       return {
         centerX: previousX + width / 2,
         datePlayedGmt: snapshot.datePlayedGmt,
         matchIndex: snapshot.matchIndex,
+        playerChanges,
         summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: +${formatScore(snapshot.earnedPoints)} rating`,
         width,
         x: currentX,
@@ -269,7 +285,8 @@ export function RankingGraph(props: RankingGraphProps) {
     });
   });
 
-  const activePlayerName = () => hoveredPlayerName() ?? activePoint()?.playerName;
+  const activePlayerName = () =>
+    hoveredPlayerName() ?? activePoint()?.playerName;
 
   const activeMatchColumn = createMemo(() => {
     const matchIndex = activeMatchIndex();
@@ -289,19 +306,15 @@ export function RankingGraph(props: RankingGraphProps) {
         <div>
           <h2>Ranking timeline</h2>
           <p class="card-copy">
-            Elo rating progression by match step. The x-axis only advances when a
-            match was played.
+            Elo rating progression by match step. The x-axis only advances when
+            a match was played.
           </p>
         </div>
       </div>
 
       <Show
         when={props.rankings.length > 0 && props.timeline.length > 0}
-        fallback={
-          <p class="helper-text">
-            No matches available yet.
-          </p>
-        }
+        fallback={<p class="helper-text">No matches available yet.</p>}
       >
         <div
           class="ranking-graph-surface"
@@ -309,6 +322,9 @@ export function RankingGraph(props: RankingGraphProps) {
             setActivePoint(null);
             setActiveMatchIndex(null);
             setHoveredPlayerName(null);
+          }}
+          onClick={() => {
+            setContextMenu(null);
           }}
         >
           <div class="ranking-graph-scroll">
@@ -417,6 +433,14 @@ export function RankingGraph(props: RankingGraphProps) {
                       setActiveMatchIndex(column.matchIndex);
                       setHoveredPlayerName(null);
                     }}
+                    onContextMenu={(event) => {
+                      event.preventDefault();
+                      setContextMenu({
+                        x: event.clientX,
+                        y: event.clientY,
+                        matchIndex: column.matchIndex,
+                      });
+                    }}
                   />
                 )}
               </For>
@@ -431,7 +455,7 @@ export function RankingGraph(props: RankingGraphProps) {
 
                     if (active === series.name && pathRef) {
                       // Reset animation first
-                      pathRef.style.animation = 'none';
+                      pathRef.style.animation = "none";
                       pathRef.getBoundingClientRect(); // Force reflow
 
                       const length = pathRef.getTotalLength();
@@ -449,17 +473,20 @@ export function RankingGraph(props: RankingGraphProps) {
                         ref={pathRef}
                         class="ranking-graph-line"
                         classList={{
-                          "ranking-graph-line-animated": activePlayerName() === series.name
+                          "ranking-graph-line-animated":
+                            activePlayerName() === series.name,
                         }}
                         d={createLinePath(series.points)}
                         opacity={
-                          !activePlayerName() || activePlayerName() === series.name
+                          !activePlayerName() ||
+                          activePlayerName() === series.name
                             ? 1
                             : 0.22
                         }
                         stroke={series.color}
                         style={{
-                          "stroke-width": activePlayerName() === series.name ? "5px" : "3px"
+                          "stroke-width":
+                            activePlayerName() === series.name ? "5px" : "3px",
                         }}
                       />
                       <For each={series.points}>
@@ -470,7 +497,8 @@ export function RankingGraph(props: RankingGraphProps) {
                             cy={point.y}
                             fill={point.color}
                             opacity={
-                              !activePlayerName() || activePlayerName() === series.name
+                              !activePlayerName() ||
+                              activePlayerName() === series.name
                                 ? 1
                                 : 0.3
                             }
@@ -498,8 +526,38 @@ export function RankingGraph(props: RankingGraphProps) {
                 top: `${Math.max(CHART_PADDING.top + 8, 8)}px`,
               }}
             >
-              <span class="ranking-graph-tooltip-line">{activeMatchColumn()?.summary}</span>
-              <span>{formatTooltipTime(activeMatchColumn()?.datePlayedGmt ?? "")}</span>
+              <div class="ranking-graph-tooltip-date">
+                {formatTooltipTime(activeMatchColumn()?.datePlayedGmt ?? "")}
+              </div>
+              <For each={activeMatchColumn()?.playerChanges}>
+                {(change) => (
+                  <div class="ranking-graph-tooltip-line">{change}</div>
+                )}
+              </For>
+            </div>
+          </Show>
+
+          <Show when={contextMenu() !== null}>
+            <div
+              class="ranking-graph-context-menu"
+              style={{
+                left: `${contextMenu()?.x ?? 0}px`,
+                top: `${contextMenu()?.y ?? 0}px`,
+              }}
+            >
+              <button
+                type="button"
+                class="ranking-graph-context-menu-item"
+                onClick={() => {
+                  if (props.onDeleteMatch && contextMenu()) {
+                    props.onDeleteMatch(contextMenu()!.matchIndex);
+                  }
+                  setContextMenu(null);
+                }}
+              >
+                <BinIcon />
+                &nbsp;Delete match
+              </button>
             </div>
           </Show>
         </div>
@@ -510,7 +568,10 @@ export function RankingGraph(props: RankingGraphProps) {
               <li
                 class="ranking-graph-legend-item"
                 data-active={activePlayerName() === series.name}
-                data-dimmed={Boolean(activePlayerName()) && activePlayerName() !== series.name}
+                data-dimmed={
+                  Boolean(activePlayerName()) &&
+                  activePlayerName() !== series.name
+                }
                 onMouseEnter={() => setHoveredPlayerName(series.name)}
                 onMouseLeave={() => {
                   setHoveredPlayerName(null);
@@ -522,7 +583,8 @@ export function RankingGraph(props: RankingGraphProps) {
                 />
                 <span class="ranking-graph-legend-name">{series.name}</span>
                 <span class="ranking-graph-legend-meta">
-                  #{series.latest?.rank ?? "-"} · {formatScore(series.latest?.score ?? 0)} rating
+                  #{series.latest?.rank ?? "-"} ·{" "}
+                  {formatScore(series.latest?.score ?? 0)} rating
                 </span>
               </li>
             )}

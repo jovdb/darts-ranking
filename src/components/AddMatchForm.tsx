@@ -1,6 +1,8 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
 import {
   calculateSoloTeamMatchPreview,
+  getKFactor,
+  calculateExpectedSoloScore,
 } from "~/services/elo-scoring";
 import {
   formatScore,
@@ -31,6 +33,36 @@ const formatRatingChange = (value: number) => {
   const prefix = value >= 0 ? "+" : "";
 
   return `${prefix}${formatScore(value)} rating`;
+};
+
+const getRatingChangeTooltip = (playerName: string, winnerName: string, selectedPlayers: RankedPlayer[]) => {
+  const player = selectedPlayers.find(p => p.name === playerName);
+  const winner = selectedPlayers.find(p => p.name === winnerName);
+  
+  if (!player || !winner) return "";
+  
+  if (playerName === winnerName) {
+    // Winner's tooltip - shows gains from each opponent
+    const opponentGains = selectedPlayers
+      .filter(p => p.name !== winnerName)
+      .map(opponent => {
+        const expectedScore = calculateExpectedSoloScore(winner.score, opponent.score);
+        const kFactor = getKFactor(winner.matchCount);
+        const rawGain = kFactor * (1 - expectedScore);
+        const gain = rawGain > 0 && rawGain < 1 ? 1 : Math.round(rawGain);
+        return `${gain}pts vs ${opponent.name}`;
+      });
+    
+    const totalGain = opponentGains.reduce((sum, gain) => sum + parseInt(gain.split('pts')[0]), 0);
+    return `Winner gains: ${opponentGains.join(" + ")} = ${totalGain}pts total`;
+  } else {
+    // Loser's tooltip - shows loss calculation
+    const expectedScore = calculateExpectedSoloScore(winner.score, player.score);
+    const kFactor = getKFactor(player.matchCount);
+    const loss = Math.round(kFactor * (expectedScore - 1));
+    
+    return `Loser: K=${kFactor} × (${(expectedScore * 100).toFixed(1)}% - 100%) = ${loss}pts`;
+  }
 };
 
 export function AddMatchForm(props: AddMatchFormProps) {
@@ -197,20 +229,13 @@ export function AddMatchForm(props: AddMatchFormProps) {
       <Show when={winnerName() && matchPreview()}>
         <fieldset class="winner-options">
           <legend class="field-label">Rating change preview</legend>
-          <Show when={matchPreview()}>
-            {(preview) => (
-              <p class="winner-single-preview">
-                Virtual team rating: {formatScore(preview().teamRating)}
-                <span class="winner-choice-points">
-                  {formatRatingChange(preview().soloRatingChange)}
-                </span>
-              </p>
-            )}
-          </Show>
           <ul class="winner-preview-list">
             <For each={ratingPreviewRows()}>
               {(row) => (
-                <li class="winner-preview-item">
+                <li 
+                  class="winner-preview-item"
+                  title={getRatingChangeTooltip(row.label, winnerName(), selectedPlayers())}
+                >
                   <span>{row.label}</span>
                   <span
                     class="winner-choice-points"

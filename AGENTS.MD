@@ -79,10 +79,10 @@ The scoring system will be calculated from state using the following logic:
 - Use an Elo-based rating system calculated chronologically from the full match history.
 - Start every player at a default Elo rating.
 - Treat the selected winner as the solo player and all selected losing players as the opposing team.
-- Calculate a virtual team rating from the average losing-player rating plus a configurable synergy bonus per extra team member.
+- Calculate rating changes per losing player against the winner, summing the winner's gains from all opponents.
 - Use a placement phase with K=60 for a player's first 10 matches, then K=32 afterwards.
-- Update the solo winner with the full Elo gain for beating the team.
-- Update each losing team member with a share of the Elo loss divided by team size.
+- Update the solo winner with the full Elo gain for beating each opponent.
+- Update each losing team member with their individual Elo loss based on their expected score against the winner.
 - Clamp winner gain to at least 1 rating point for positive wins.
 - Keep the Elo math isolated in a separate scoring module so previews and ranking history use the same rules.
 - Order players by Elo rating in the ranking list.

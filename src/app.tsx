@@ -210,6 +210,23 @@ export default function App() {
     return true;
   };
 
+  const handleDeleteMatch = (matchIndex: number) => {
+    setAppState((currentState) => ({
+      ...currentState,
+      playedMatches: currentState.playedMatches.filter((_, index) => index !== matchIndex),
+    }));
+  };
+
+  const handleDeletePlayer = (playerName: string) => {
+    setAppState((currentState) => ({
+      ...currentState,
+      players: currentState.players.filter((player) => player.name !== playerName),
+      playedMatches: currentState.playedMatches.filter(
+        (match) => match.winningPlayer !== playerName && !match.losingPlayers.includes(playerName)
+      ),
+    }));
+  };
+
   return (
     <main class="app-shell">
       <section class="app-panel">
@@ -241,6 +258,7 @@ export default function App() {
             <RankingList
               onSelectPlayerHistory={openPlayerMatchHistory}
               rankings={rankings()}
+              onDeletePlayer={handleDeletePlayer}
             />
             <div class="ranking-actions">
               <button
@@ -253,7 +271,11 @@ export default function App() {
             </div>
           </section>
 
-          <RankingGraph rankings={rankings()} timeline={rankingTimeline()} />
+          <RankingGraph 
+            rankings={rankings()} 
+            timeline={rankingTimeline()} 
+            onDeleteMatch={handleDeleteMatch}
+          />
 
           <PlayerGrid
             historicalMatches={matchHistory()}
