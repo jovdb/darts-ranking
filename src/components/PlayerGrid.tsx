@@ -31,8 +31,10 @@ export function PlayerGrid(props: PlayerGridProps) {
     const wins = new Map<string, number>();
 
     for (const match of props.playedMatches) {
-      const key = createMatchKey(match.winningPlayer, match.losingPlayer);
-      wins.set(key, (wins.get(key) ?? 0) + 1);
+      for (const losingPlayer of match.losingPlayers) {
+        const key = createMatchKey(match.winningPlayer, losingPlayer);
+        wins.set(key, (wins.get(key) ?? 0) + 1);
+      }
     }
 
     return wins;
@@ -297,7 +299,7 @@ export function PlayerGrid(props: PlayerGridProps) {
                       type="button"
                       onClick={openAllMatchesHistory}
                     >
-                      {props.playedMatches.length}
+                      {props.historicalMatches.length}
                     </button>
                   </td>
                 </tr>

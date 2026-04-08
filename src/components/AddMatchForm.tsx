@@ -2,26 +2,30 @@ import { For, Show, createMemo, createSignal } from "solid-js";
 
 import type { PlayedMatch } from "~/types/app-state";
 
-import { getRematchRestriction } from "~/services/match-rules";
+import {
+  formatRematchCooldownLabel,
+  getRematchRestriction,
+} from "~/services/match-rules";
 import { calculateEarnedPoints, type RankedPlayer } from "~/services/ranking";
 
 import "./AddMatchForm.css";
+import { BinIcon } from "./BinIcon";
 
 type AddMatchFormProps = {
   error?: string;
   onCancel: () => void;
-  onAddMatch: (
-    firstPlayerName: string,
-    secondPlayerName: string,
-    winnerName: string,
-  ) => boolean;
+  onAddMatch: (selectedPlayerNames: string[], winnerName: string) => boolean;
   playedMatches: PlayedMatch[];
   players: RankedPlayer[];
 };
 
-type MatchPreview = {
-  firstPlayerPoints: number;
-  secondPlayerPoints: number;
+type OpponentPreview = {
+  availableAtLabel: string | null;
+  cooldownLabel: string;
+  isBlocked: boolean;
+  message: string;
+  opponentName: string;
+  points: number | null;
 };
 
 const formatPlayerLabel = (player: RankedPlayer) => {
@@ -32,245 +36,242 @@ const formatPointLabel = (points: number) => {
   return `(+${points}${points === 1 ? "pt" : "pts"})`;
 };
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const formatDateLabel = (value: Date) => {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(value);
+};
 
 export function AddMatchForm(props: AddMatchFormProps) {
-  const [firstPlayerName, setFirstPlayerName] = createSignal("");
-  const [secondPlayerName, setSecondPlayerName] = createSignal("");
+  const [selectedPlayerNames, setSelectedPlayerNames] = createSignal<string[]>([]);
+  const [playerToAdd, setPlayerToAdd] = createSignal("");
   const [winnerName, setWinnerName] = createSignal("");
 
   const findPlayer = (name: string) => {
     return props.players.find((player) => player.name === name);
   };
 
-  const formatSecondPlayerLabel = (player: RankedPlayer) => {
-    const firstPlayer = firstPlayerName();
+  const selectedPlayers = createMemo(() => {
+    return selectedPlayerNames()
+      .map((playerName) => findPlayer(playerName))
+      .filter((player): player is RankedPlayer => Boolean(player));
+  });
 
-    if (!firstPlayer) {
-      return formatPlayerLabel(player);
+  const availablePlayers = createMemo(() => {
+    const selectedNames = new Set(selectedPlayerNames());
+
+    return props.players.filter((player) => !selectedNames.has(player.name));
+  });
+
+  const opponentPreview = createMemo<OpponentPreview[]>(() => {
+    const selectedWinner = findPlayer(winnerName());
+
+    if (!selectedWinner) {
+      return [];
     }
 
-    const rematchRestriction = getRematchRestriction(
-      props.playedMatches,
-      firstPlayer,
-      player.name,
+    return selectedPlayers()
+      .filter((player) => player.name !== selectedWinner.name)
+      .map((player) => {
+        const rematchRestriction = getRematchRestriction(
+          props.playedMatches,
+          selectedWinner.name,
+          player.name,
+        );
+
+        if (rematchRestriction.isBlocked) {
+          return {
+            availableAtLabel: rematchRestriction.availableAt
+              ? formatDateLabel(rematchRestriction.availableAt)
+              : null,
+            cooldownLabel: formatRematchCooldownLabel(),
+            isBlocked: true,
+            message: rematchRestriction.message,
+            opponentName: player.name,
+            points: null,
+          };
+        }
+
+        return {
+          availableAtLabel: null,
+          cooldownLabel: formatRematchCooldownLabel(),
+          isBlocked: false,
+          message: "",
+          opponentName: player.name,
+          points: calculateEarnedPoints(
+            selectedWinner.difficultyLevel,
+            player.difficultyLevel,
+          ),
+        };
+      });
+  });
+
+  const rematchRestrictions = createMemo(() => {
+    return opponentPreview().filter((preview) => preview.isBlocked);
+  });
+
+  const winnerPointsPreview = createMemo(() => {
+    const eligibleOpponents = opponentPreview().filter(
+      (preview) => !preview.isBlocked && preview.points !== null,
     );
 
-    if (!rematchRestriction.isBlocked || !rematchRestriction.availableAt) {
-      return formatPlayerLabel(player);
+    if (eligibleOpponents.length === 0) {
+      return null;
     }
 
-    const daysUntilAvailable = Math.ceil(
-      (rematchRestriction.availableAt.getTime() - Date.now()) / DAY_IN_MS,
-    );
-    const safeDaysUntilAvailable = Math.max(1, daysUntilAvailable);
+    return eligibleOpponents.reduce((bestPreview, currentPreview) => {
+      const bestPoints = bestPreview.points ?? 0;
+      const currentPoints = currentPreview.points ?? 0;
 
-    return `${formatPlayerLabel(player)} (possible in ${safeDaysUntilAvailable} day${safeDaysUntilAvailable === 1 ? "" : "s"})`;
+      return currentPoints > bestPoints ? currentPreview : bestPreview;
+    });
+  });
+
+  const addSelectedPlayer = (rawPlayerName: string) => {
+    const nextPlayerName = rawPlayerName.trim();
+
+    if (!nextPlayerName) {
+      return;
+    }
+
+    if (selectedPlayerNames().includes(nextPlayerName)) {
+      setPlayerToAdd("");
+      return;
+    }
+
+    setSelectedPlayerNames((currentNames) => [...currentNames, nextPlayerName]);
+    setPlayerToAdd("");
   };
 
-  const syncWinner = (
-    nextFirstPlayerName: string,
-    nextSecondPlayerName: string,
-  ) => {
-    if (
-      winnerName() !== nextFirstPlayerName &&
-      winnerName() !== nextSecondPlayerName
-    ) {
+  const removeSelectedPlayer = (playerName: string) => {
+    setSelectedPlayerNames((currentNames) =>
+      currentNames.filter((name) => name !== playerName),
+    );
+
+    if (winnerName() === playerName) {
       setWinnerName("");
     }
-  };
-
-  const selectedFirstPlayer = createMemo(() => findPlayer(firstPlayerName()));
-  const selectedSecondPlayer = createMemo(() => findPlayer(secondPlayerName()));
-  const matchPreview = createMemo<MatchPreview | null>(() => {
-    const firstPlayer = selectedFirstPlayer();
-    const secondPlayer = selectedSecondPlayer();
-
-    if (
-      !firstPlayer ||
-      !secondPlayer ||
-      firstPlayer.name === secondPlayer.name
-    ) {
-      return null;
-    }
-
-    return {
-      firstPlayerPoints: calculateEarnedPoints(
-        firstPlayer.difficultyLevel,
-        secondPlayer.difficultyLevel,
-      ),
-      secondPlayerPoints: calculateEarnedPoints(
-        secondPlayer.difficultyLevel,
-        firstPlayer.difficultyLevel,
-      ),
-    };
-  });
-  const rematchRestriction = createMemo(() => {
-    const firstPlayer = selectedFirstPlayer();
-    const secondPlayer = selectedSecondPlayer();
-
-    if (
-      !firstPlayer ||
-      !secondPlayer ||
-      firstPlayer.name === secondPlayer.name
-    ) {
-      return null;
-    }
-
-    return getRematchRestriction(
-      props.playedMatches,
-      firstPlayer.name,
-      secondPlayer.name,
-    );
-  });
-
-  const handleFirstPlayerChange = (nextPlayerName: string) => {
-    const nextSecondPlayerName =
-      nextPlayerName === secondPlayerName() ? "" : secondPlayerName();
-
-    setFirstPlayerName(nextPlayerName);
-    setSecondPlayerName(nextSecondPlayerName);
-    syncWinner(nextPlayerName, nextSecondPlayerName);
-  };
-
-  const handleSecondPlayerChange = (nextPlayerName: string) => {
-    setSecondPlayerName(nextPlayerName);
-    syncWinner(firstPlayerName(), nextPlayerName);
   };
 
   const handleSubmit = (event: SubmitEvent) => {
     event.preventDefault();
 
-    const didAddMatch = props.onAddMatch(
-      firstPlayerName(),
-      secondPlayerName(),
-      winnerName(),
-    );
+    const didAddMatch = props.onAddMatch(selectedPlayerNames(), winnerName());
 
     if (didAddMatch) {
-      setFirstPlayerName("");
-      setSecondPlayerName("");
+      setSelectedPlayerNames([]);
+      setPlayerToAdd("");
       setWinnerName("");
     }
   };
 
   return (
     <form class="match-form" onSubmit={handleSubmit}>
-      <div class="match-grid">
-        <div>
-          <label class="field-label" for="first-player">
-            First player
-          </label>
+      <div class="selected-players-list">
+        <label class="field-label">Players</label>
+
+        <For each={selectedPlayers()}>
+          {(player) => (
+            <div class="selected-player-row">
+              <button
+                class="selected-player-button"
+                classList={{ "is-winner": winnerName() === player.name }}
+                type="button"
+                onClick={() => setWinnerName(player.name)}
+              >
+                <span>{formatPlayerLabel(player)}</span>
+                <Show when={winnerName() === player.name}>
+                  <span class="selected-player-winner-tag">Winner</span>
+                </Show>
+              </button>
+              <button
+                class="selected-player-delete"
+                type="button"
+                onClick={() => removeSelectedPlayer(player.name)}
+                aria-label={`Remove ${player.name}`}
+              >
+                <BinIcon />
+              </button>
+            </div>
+          )}
+        </For>
+
+        <div class="selected-player-row selected-player-row-add">
           <select
-            id="first-player"
+            id="next-player"
             class="select-input"
-            value={firstPlayerName()}
-            onInput={(event) =>
-              handleFirstPlayerChange(event.currentTarget.value)
-            }
+            value={playerToAdd()}
+            onInput={(event) => {
+              const nextPlayerName = event.currentTarget.value;
+              setPlayerToAdd(nextPlayerName);
+              addSelectedPlayer(nextPlayerName);
+            }}
           >
             <option value="">Select a player</option>
-            <For each={props.players}>
+            <For each={availablePlayers()}>
               {(player) => (
                 <option value={player.name}>{formatPlayerLabel(player)}</option>
               )}
             </For>
           </select>
         </div>
-
-        <div>
-          <label class="field-label" for="second-player">
-            Second player
-          </label>
-          <select
-            id="second-player"
-            class="select-input"
-            value={secondPlayerName()}
-            onInput={(event) =>
-              handleSecondPlayerChange(event.currentTarget.value)
-            }
-          >
-            <option value="">Select a player</option>
-            <For
-              each={props.players.filter(
-                (player) => player.name !== firstPlayerName(),
-              )}
-            >
-              {(player) => (
-                <option value={player.name}>
-                  {formatSecondPlayerLabel(player)}
-                </option>
-              )}
-            </For>
-          </select>
-        </div>
       </div>
 
-      <Show when={matchPreview()}>
-        {(currentPreview) => (
-          <fieldset class="winner-options">
-            <legend class="field-label">Winner</legend>
-
-            <label
-              class="winner-choice"
-              classList={{
-                "is-selected": winnerName() === selectedFirstPlayer()?.name,
-              }}
-            >
-              <input
-                type="radio"
-                name="winner"
-                value={selectedFirstPlayer()?.name ?? ""}
-                checked={winnerName() === selectedFirstPlayer()?.name}
-                onInput={(event) => setWinnerName(event.currentTarget.value)}
-              />
-              <span class="winner-choice-details">
-                <span class="winner-choice-name">
-                  {selectedFirstPlayer()?.name}
-                  <span class="winner-choice-points">
-                    {formatPointLabel(currentPreview().firstPlayerPoints)}
-                  </span>
+      <Show when={winnerName() && winnerPointsPreview()}>
+        <fieldset class="winner-options">
+          <legend class="field-label">Winner points preview</legend>
+          <Show when={winnerPointsPreview()}>
+            {(preview) => (
+              <p class="winner-single-preview">
+                {winnerName()} earns
+                <span class="winner-choice-points">
+                  {formatPointLabel(preview().points ?? 0)}
                 </span>
-              </span>
-            </label>
-
-            <label
-              class="winner-choice"
-              classList={{
-                "is-selected": winnerName() === selectedSecondPlayer()?.name,
-              }}
-            >
-              <input
-                type="radio"
-                name="winner"
-                value={selectedSecondPlayer()?.name ?? ""}
-                checked={winnerName() === selectedSecondPlayer()?.name}
-                onInput={(event) => setWinnerName(event.currentTarget.value)}
-              />
-              <span class="winner-choice-details">
-                <span class="winner-choice-name">
-                  {selectedSecondPlayer()?.name}
-                  <span class="winner-choice-points">
-                    {formatPointLabel(currentPreview().secondPlayerPoints)}
-                  </span>
-                </span>
-              </span>
-            </label>
-          </fieldset>
-        )}
+                from highest eligible opponent: {preview().opponentName}
+              </p>
+            )}
+          </Show>
+        </fieldset>
       </Show>
 
-      <Show when={rematchRestriction()?.isBlocked}>
-        <p class="restriction-message" role="status" aria-live="polite">
-          {rematchRestriction()?.message}
-        </p>
+      <Show when={winnerName() && opponentPreview().length > 0}>
+        <div class="restriction-list" role="status" aria-live="polite">
+          <For each={opponentPreview()}>
+            {(preview) => (
+              <p class="restriction-message" classList={{ "is-blocked": preview.isBlocked }}>
+                <strong>{preview.opponentName}:</strong>{" "}
+                <Show
+                  when={!preview.isBlocked}
+                  fallback={
+                    <span>
+                      Not rematch possible yet (played in last {preview.cooldownLabel})
+                      <Show when={preview.availableAtLabel}>
+                        <span>. Available at {preview.availableAtLabel}</span>
+                      </Show>
+                    </span>
+                  }
+                >
+                  <span>
+                    Eligible now, winner earns {formatPointLabel(preview.points ?? 0)}.
+                  </span>
+                </Show>
+              </p>
+            )}
+          </For>
+        </div>
       </Show>
 
       <div class="form-actions">
         <button
           class="primary-button"
           type="submit"
-          disabled={Boolean(rematchRestriction()?.isBlocked)}
+          disabled={
+            selectedPlayerNames().length < 2 ||
+            !winnerName() ||
+            rematchRestrictions().length > 0
+          }
         >
           Confirm match
         </button>

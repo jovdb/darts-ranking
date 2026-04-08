@@ -4,8 +4,8 @@ export type Player = {
 
 export type PlayedMatch = {
   datePlayedGmt: string;
+  losingPlayers: string[];
   winningPlayer: string;
-  losingPlayer: string;
 };
 
 export type AppState = {

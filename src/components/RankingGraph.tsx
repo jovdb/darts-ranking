@@ -248,7 +248,7 @@ export function RankingGraph(props: RankingGraphProps) {
         centerX: previousX + width / 2,
         datePlayedGmt: snapshot.datePlayedGmt,
         matchIndex: snapshot.matchIndex,
-        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayer}: ${snapshot.earnedPoints}pt${snapshot.earnedPoints === 1 ? "" : "s"}`,
+        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: ${snapshot.earnedPoints}pt${snapshot.earnedPoints === 1 ? "" : "s"}`,
         width,
         x: currentX,
         xStart: previousX,

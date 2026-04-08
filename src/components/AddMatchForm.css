@@ -4,10 +4,54 @@
   margin-top: 1rem;
 }
 
-.match-grid {
+.selected-players-list {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.65rem;
+}
+
+.selected-player-row {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.selected-player-row-add {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.selected-player-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid rgba(17, 37, 60, 0.12);
+  border-radius: 0.9rem;
+  background-color: rgba(255, 255, 255, 0.78);
+  color: var(--text-color);
+  text-align: left;
+  cursor: pointer;
+}
+
+.selected-player-button.is-winner {
+  border-color: rgba(180, 90, 34, 0.45);
+  box-shadow: 0 0 0 3px rgba(180, 90, 34, 0.1);
+}
+
+.selected-player-winner-tag {
+  color: var(--accent-color-strong);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.selected-player-delete {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(17, 37, 60, 0.2);
+  border-radius: 0.8rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--text-color);
+  cursor: pointer;
 }
 
 .field-label {
@@ -49,40 +93,31 @@
   padding: 0;
 }
 
-.winner-choice {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: space-between;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(17, 37, 60, 0.12);
-  border-radius: 0.9rem;
-  background-color: rgba(255, 255, 255, 0.66);
-  cursor: pointer;
-}
-
-.winner-choice.is-selected {
-  border-color: rgba(180, 90, 34, 0.45);
-  box-shadow: 0 0 0 3px rgba(180, 90, 34, 0.1);
-}
-
-.winner-choice input {
-  margin: 0;
-}
-
-.winner-choice-details {
+.winner-preview-list {
   display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-  flex: 1;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.winner-choice-name {
-  display: inline-flex;
-  flex-wrap: wrap;
+.winner-single-preview {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(17, 37, 60, 0.12);
+  border-radius: 0.85rem;
+  background-color: rgba(255, 255, 255, 0.74);
+}
+
+.winner-preview-item {
+  display: flex;
   align-items: baseline;
-  gap: 0.45rem;
-  font-weight: 700;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(17, 37, 60, 0.1);
+  border-radius: 0.8rem;
+  background-color: rgba(255, 255, 255, 0.66);
 }
 
 .winner-choice-points {
@@ -123,14 +158,26 @@
   outline-offset: 2px;
 }
 
+.restriction-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .restriction-message {
   margin: 0;
   padding: 0.85rem 1rem;
   border: 1px solid rgba(180, 90, 34, 0.24);
   border-radius: 0.9rem;
-  background-color: rgba(180, 90, 34, 0.08);
-  color: var(--accent-color-strong);
+  background-color: rgba(44, 129, 70, 0.08);
+  border-color: rgba(44, 129, 70, 0.24);
+  color: #1f6a35;
   line-height: 1.5;
+}
+
+.restriction-message.is-blocked {
+  background-color: rgba(180, 90, 34, 0.08);
+  border-color: rgba(180, 90, 34, 0.24);
+  color: var(--accent-color-strong);
 }
 
 .form-actions {

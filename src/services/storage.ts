@@ -5,6 +5,12 @@ import {
   type Player,
 } from "~/types/app-state";
 
+type LegacyPlayedMatch = {
+  datePlayedGmt: string;
+  losingPlayer: string;
+  winningPlayer: string;
+};
+
 export interface AppStorage {
   load(): AppState;
   save(state: AppState): void;
@@ -16,7 +22,10 @@ const clonePlayers = (players: Player[]): Player[] =>
   players.map((player) => ({ ...player }));
 
 const clonePlayedMatches = (playedMatches: PlayedMatch[]): PlayedMatch[] =>
-  playedMatches.map((playedMatch) => ({ ...playedMatch }));
+  playedMatches.map((playedMatch) => ({
+    ...playedMatch,
+    losingPlayers: [...playedMatch.losingPlayers],
+  }));
 
 const cloneState = (state: AppState): AppState => ({
   players: clonePlayers(state.players),
@@ -29,7 +38,7 @@ const isPlayer = (value: unknown): value is Player =>
   "name" in value &&
   typeof value.name === "string";
 
-const isPlayedMatch = (value: unknown): value is PlayedMatch =>
+const isLegacyPlayedMatch = (value: unknown): value is LegacyPlayedMatch =>
   typeof value === "object" &&
   value !== null &&
   "datePlayedGmt" in value &&
@@ -39,6 +48,38 @@ const isPlayedMatch = (value: unknown): value is PlayedMatch =>
   "losingPlayer" in value &&
   typeof value.losingPlayer === "string";
 
+const isPlayedMatch = (value: unknown): value is PlayedMatch =>
+  typeof value === "object" &&
+  value !== null &&
+  "datePlayedGmt" in value &&
+  typeof value.datePlayedGmt === "string" &&
+  "winningPlayer" in value &&
+  typeof value.winningPlayer === "string" &&
+  "losingPlayers" in value &&
+  Array.isArray(value.losingPlayers) &&
+  value.losingPlayers.every((playerName) => typeof playerName === "string");
+
+const isAnyPlayedMatch = (value: unknown): value is PlayedMatch | LegacyPlayedMatch =>
+  isPlayedMatch(value) || isLegacyPlayedMatch(value);
+
+const normalizePlayedMatch = (
+  playedMatch: PlayedMatch | LegacyPlayedMatch,
+): PlayedMatch => {
+  if ("losingPlayers" in playedMatch) {
+    return {
+      datePlayedGmt: playedMatch.datePlayedGmt,
+      losingPlayers: [...playedMatch.losingPlayers],
+      winningPlayer: playedMatch.winningPlayer,
+    };
+  }
+
+  return {
+    datePlayedGmt: playedMatch.datePlayedGmt,
+    losingPlayers: [playedMatch.losingPlayer],
+    winningPlayer: playedMatch.winningPlayer,
+  };
+};
+
 const isAppState = (value: unknown): value is AppState =>
   typeof value === "object" &&
   value !== null &&
@@ -47,7 +88,7 @@ const isAppState = (value: unknown): value is AppState =>
   value.players.every(isPlayer) &&
   "playedMatches" in value &&
   Array.isArray(value.playedMatches) &&
-  value.playedMatches.every(isPlayedMatch);
+  value.playedMatches.every(isAnyPlayedMatch);
 
 export function createLocalAppStorage(
   storageKey = "darts-ranking/app-state",
@@ -68,7 +109,10 @@ export function createLocalAppStorage(
         const parsedState: unknown = JSON.parse(rawState);
 
         if (isAppState(parsedState)) {
-          memoryState = cloneState(parsedState);
+          memoryState = cloneState({
+            players: parsedState.players,
+            playedMatches: parsedState.playedMatches.map(normalizePlayedMatch),
+          });
         }
       } catch {
         return cloneState(memoryState);

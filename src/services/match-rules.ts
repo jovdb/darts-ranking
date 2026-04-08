@@ -1,17 +1,39 @@
 import type { PlayedMatch } from "~/types/app-state";
 
-const FOUR_WEEKS_IN_MS = 28 * 24 * 60 * 60 * 1000;
+const parseRematchCooldownDays = () => {
+  const rawValue = process.env.REMATCH_COOLDOWN_DAYS;
+
+  if (!rawValue) {
+    return 30;
+  }
+
+  const parsedValue = Number.parseInt(rawValue, 10);
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+    return 30;
+  }
+
+  return parsedValue;
+};
+
+export const REMATCH_COOLDOWN_DAYS = parseRematchCooldownDays();
+const REMATCH_COOLDOWN_MS = REMATCH_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
 
 const isSamePairing = (
   match: PlayedMatch,
   firstPlayerName: string,
   secondPlayerName: string,
 ) => {
+  const losingPlayers =
+    match.losingPlayers.length > 0
+      ? match.losingPlayers
+      : [];
+
   return (
     (match.winningPlayer === firstPlayerName &&
-      match.losingPlayer === secondPlayerName) ||
+      losingPlayers.includes(secondPlayerName)) ||
     (match.winningPlayer === secondPlayerName &&
-      match.losingPlayer === firstPlayerName)
+      losingPlayers.includes(firstPlayerName))
   );
 };
 
@@ -21,6 +43,10 @@ const formatAvailabilityDate = (value: Date) => {
     month: "short",
     year: "numeric",
   }).format(value);
+};
+
+export const formatRematchCooldownLabel = () => {
+  return `${REMATCH_COOLDOWN_DAYS} day${REMATCH_COOLDOWN_DAYS === 1 ? "" : "s"}`;
 };
 
 export const getRematchRestriction = (
@@ -56,7 +82,7 @@ export const getRematchRestriction = (
     };
   }
 
-  const availableAt = new Date(latestPlayedAt.getTime() + FOUR_WEEKS_IN_MS);
+  const availableAt = new Date(latestPlayedAt.getTime() + REMATCH_COOLDOWN_MS);
 
   if (availableAt.getTime() <= asOf.getTime()) {
     return {
@@ -71,6 +97,6 @@ export const getRematchRestriction = (
     availableAt,
     isBlocked: true,
     lastPlayedAt: latestPlayedAt,
-    message: `${firstPlayerName} and ${secondPlayerName} recently played at ${formatAvailabilityDate(latestPlayedAt)}, rematch possible at ${formatAvailabilityDate(availableAt)}.`,
+    message: `${firstPlayerName} and ${secondPlayerName} played within the last ${formatRematchCooldownLabel()} (${formatAvailabilityDate(latestPlayedAt)}). Rematch possible at ${formatAvailabilityDate(availableAt)}.`,
   };
 };

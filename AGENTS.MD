@@ -51,12 +51,13 @@ This will be a Solid Start application to start darts games with opponents and c
 - There should be a 'Start Match', it should:
   - be triggered from an `Add Match` button placed in the ranking header, next to the match count.
   - open as a popup.
-  - ask to select the 2 players
+  - ask to select multiple players using an add-player combobox with a plus button
+  - show each selected player as a removable row with a delete button
+  - allow selecting one selected player as winner by clicking that player row, with a visible winner indication
   - show each selectable player as `#rank Name (Lx)`.
-  - show the points the winner will earn, for example `Jo (+1pt)`.
-  - show a message when the selected players cannot play yet because they already played each other in the last 4 weeks.
-  - allow to select the winner
-  - At confirmed add match information to the state.
+  - show the points the winner will earn against each selected opponent.
+  - show a message when the selected winner cannot play yet against one of the selected opponents because they already played each other in the last 4 weeks.
+  - At confirm, add match information to state with one `winningPlayer` and a `losingPlayers` array.
 - You can add animations to make it more attractive (you can use View Transition API)
 
 ## State

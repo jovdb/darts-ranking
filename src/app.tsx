@@ -165,57 +165,47 @@ export default function App() {
   };
 
   const handleAddMatch = (
-    firstPlayerName: string,
-    secondPlayerName: string,
+    selectedPlayerNames: string[],
     winnerName: string,
   ) => {
-    const trimmedFirstPlayerName = firstPlayerName.trim();
-    const trimmedSecondPlayerName = secondPlayerName.trim();
+    const uniqueSelectedPlayerNames = [...new Set(selectedPlayerNames)]
+      .map((playerName) => playerName.trim())
+      .filter((playerName) => playerName.length > 0);
     const trimmedWinnerName = winnerName.trim();
 
-    if (!trimmedFirstPlayerName || !trimmedSecondPlayerName) {
-      setMatchError("Select two players to start a match.");
+    if (uniqueSelectedPlayerNames.length < 2) {
+      setMatchError("Select at least two players to start a match.");
       return false;
     }
 
-    if (trimmedFirstPlayerName === trimmedSecondPlayerName) {
-      setMatchError("A match requires two different players.");
-      return false;
-    }
-
-    if (
-      trimmedWinnerName !== trimmedFirstPlayerName &&
-      trimmedWinnerName !== trimmedSecondPlayerName
-    ) {
+    if (!uniqueSelectedPlayerNames.includes(trimmedWinnerName)) {
       setMatchError("Select which player won the match.");
       return false;
     }
 
     const playerNames = new Set(players().map((player) => player.name));
 
-    if (
-      !playerNames.has(trimmedFirstPlayerName) ||
-      !playerNames.has(trimmedSecondPlayerName)
-    ) {
-      setMatchError("Both selected players must still exist in the roster.");
+    if (!uniqueSelectedPlayerNames.every((playerName) => playerNames.has(playerName))) {
+      setMatchError("All selected players must still exist in the roster.");
       return false;
     }
 
-    const rematchRestriction = getRematchRestriction(
-      playedMatches(),
-      trimmedFirstPlayerName,
-      trimmedSecondPlayerName,
+    const losingPlayers = uniqueSelectedPlayerNames.filter(
+      (playerName) => playerName !== trimmedWinnerName,
     );
 
-    if (rematchRestriction.isBlocked) {
-      setMatchError(rematchRestriction.message);
-      return false;
-    }
+    for (const losingPlayer of losingPlayers) {
+      const rematchRestriction = getRematchRestriction(
+        playedMatches(),
+        trimmedWinnerName,
+        losingPlayer,
+      );
 
-    const losingPlayer =
-      trimmedWinnerName === trimmedFirstPlayerName
-        ? trimmedSecondPlayerName
-        : trimmedFirstPlayerName;
+      if (rematchRestriction.isBlocked) {
+        setMatchError(rematchRestriction.message);
+        return false;
+      }
+    }
 
     setAppState((currentState) => ({
       ...currentState,
@@ -223,7 +213,7 @@ export default function App() {
         ...currentState.playedMatches,
         {
           datePlayedGmt: new Date().toISOString(),
-          losingPlayer,
+          losingPlayers,
           winningPlayer: trimmedWinnerName,
         },
       ],
@@ -302,12 +292,6 @@ export default function App() {
               <div class="card-header popup-header">
                 <div>
                   <h2 id="add-match-title">Start a match</h2>
-                  <ul class="card-copy">
-                    <li>x170</li>
-                    <li>Single Out</li>
-                    <li>First to 2 legs wins</li>
-                    <li>Bull off</li>
-                  </ul>
                 </div>
               </div>
               <AddMatchForm
