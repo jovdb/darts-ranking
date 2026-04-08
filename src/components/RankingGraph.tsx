@@ -1,6 +1,7 @@
 import { For, Show, createMemo, createSignal, createEffect } from "solid-js";
 
 import {
+  DEFAULT_ELO_RATING,
   formatScore,
   type RankedPlayer,
   type RankingTimelineSnapshot,
@@ -16,7 +17,6 @@ type RankingGraphProps = {
 type GraphPoint = {
   color: string;
   datePlayedGmt: string;
-  difficultyLevel: RankedPlayer["difficultyLevel"];
   matchIndex: number;
   playerName: string;
   rank: number;
@@ -107,14 +107,19 @@ export function RankingGraph(props: RankingGraphProps) {
   const graphStepCount = () => props.timeline.length + 1;
 
   const scoreRange = createMemo(() => {
-    const allScores = props.timeline.flatMap((snapshot) => {
-      return snapshot.rankings.map((ranking) => ranking.score);
-    });
-    const maxScore = Math.max(0, ...allScores);
+    const allScores = [
+      DEFAULT_ELO_RATING,
+      ...props.rankings.map((ranking) => ranking.score),
+      ...props.timeline.flatMap((snapshot) => {
+        return snapshot.rankings.map((ranking) => ranking.score);
+      }),
+    ];
+    const minScore = Math.min(...allScores);
+    const maxScore = Math.max(...allScores);
 
     return {
-      max: maxScore === 0 ? 1 : maxScore,
-      min: 0,
+      max: maxScore === minScore ? maxScore + 1 : maxScore,
+      min: minScore,
     };
   });
 
@@ -136,13 +141,17 @@ export function RankingGraph(props: RankingGraphProps) {
         {
           color: player.color,
           datePlayedGmt: "",
-          difficultyLevel: 1,
           matchIndex: -1,
           playerName: player.name,
           rank: startingRank,
-          score: 0,
+          score: DEFAULT_ELO_RATING,
           x: CHART_PADDING.left,
-          y: CHART_PADDING.top + plotHeight,
+          y:
+            CHART_PADDING.top +
+            plotHeight -
+            ((DEFAULT_ELO_RATING - scoreRange().min) /
+              (scoreRange().max - scoreRange().min || 1)) *
+              plotHeight,
         },
       ];
 
@@ -150,11 +159,13 @@ export function RankingGraph(props: RankingGraphProps) {
         const ranking = snapshot.rankings.find(
           (rankedPlayer) => rankedPlayer.name === player.name,
         ) ?? {
-          difficultyLevel: 1 as RankedPlayer["difficultyLevel"],
+          isInPlacement: true,
+          kFactor: 60,
           losses: 0,
+          matchCount: 0,
           name: player.name,
           rank: startingRank,
-          score: 0,
+          score: player.score,
           wins: 0,
         };
         const normalizedScore =
@@ -164,7 +175,6 @@ export function RankingGraph(props: RankingGraphProps) {
         return {
           color: player.color,
           datePlayedGmt: snapshot.datePlayedGmt,
-          difficultyLevel: ranking.difficultyLevel,
           matchIndex: snapshot.matchIndex,
           playerName: player.name,
           rank: ranking.rank,
@@ -187,16 +197,19 @@ export function RankingGraph(props: RankingGraphProps) {
 
   const yTicks = createMemo(() => {
     const currentScoreRange = scoreRange();
+    const minScore = Math.floor(currentScoreRange.min);
     const maxScore = Math.ceil(currentScoreRange.max);
-    const tickStep = Math.max(1, Math.ceil(maxScore / 4));
-    const tickValues = new Set<number>([0, maxScore]);
+    const tickStep = Math.max(1, Math.ceil((maxScore - minScore) / 4));
+    const tickValues = new Set<number>([minScore, maxScore]);
 
-    for (let value = 0; value <= maxScore; value += tickStep) {
+    for (let value = minScore; value <= maxScore; value += tickStep) {
       tickValues.add(value);
     }
 
     return [...tickValues].sort((left, right) => left - right).map((value) => {
-      const normalizedValue = value / (maxScore || 1);
+      const normalizedValue =
+        (value - currentScoreRange.min) /
+        (currentScoreRange.max - currentScoreRange.min || 1);
 
       return {
         label: String(value),
@@ -248,7 +261,7 @@ export function RankingGraph(props: RankingGraphProps) {
         centerX: previousX + width / 2,
         datePlayedGmt: snapshot.datePlayedGmt,
         matchIndex: snapshot.matchIndex,
-        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: ${snapshot.earnedPoints}pt${snapshot.earnedPoints === 1 ? "" : "s"}`,
+        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: +${formatScore(snapshot.earnedPoints)} rating`,
         width,
         x: currentX,
         xStart: previousX,
@@ -276,7 +289,7 @@ export function RankingGraph(props: RankingGraphProps) {
         <div>
           <h2>Ranking timeline</h2>
           <p class="card-copy">
-            Score progression by match step. The x-axis only advances when a
+            Elo rating progression by match step. The x-axis only advances when a
             match was played.
           </p>
         </div>
@@ -370,7 +383,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 text-anchor="middle"
                 transform={`translate(18 ${CHART_PADDING.top + plotHeight / 2}) rotate(-90)`}
               >
-                Points
+                Rating
               </text>
               <text
                 class="ranking-graph-axis-title"
@@ -509,7 +522,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 />
                 <span class="ranking-graph-legend-name">{series.name}</span>
                 <span class="ranking-graph-legend-meta">
-                  #{series.latest?.rank ?? "-"} · {formatScore(series.latest?.score ?? 0)} pts
+                  #{series.latest?.rank ?? "-"} · {formatScore(series.latest?.score ?? 0)} rating
                 </span>
               </li>
             )}

@@ -22,11 +22,11 @@ const formatMatchDate = (value: string) => {
 };
 
 const formatHistoricalPlayerLabel = (player: {
-  difficultyLevel: number;
+  score: number;
   name: string;
   rank: number;
 }) => {
-  return `#${player.rank} ${player.name} (L${player.difficultyLevel})`;
+  return `#${player.rank} ${player.name} (${formatScore(player.score)} rating)`;
 };
 
 export function MatchHistoryRow(props: MatchHistoryRowProps) {
@@ -42,14 +42,14 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
   };
   const pointsDetail = () => {
     if (!props.focusedPlayerName) {
-      return `+${props.match.earnedPoints} pt${props.match.earnedPoints === 1 ? "" : "s"}`;
+      return `+${formatScore(props.match.earnedPoints)} rating`;
     }
 
     if (focusedPlayerWon()) {
-      return `+${props.match.earnedPoints} pt${props.match.earnedPoints === 1 ? "" : "s"}`;
+      return `+${formatScore(props.match.earnedPoints)} rating`;
     }
 
-    return "lost";
+    return `${formatScore(props.match.losingPlayerRatingChange)} rating`;
   };
   const shouldShowTotal = () => {
     if (!props.focusedPlayerName) {
@@ -80,7 +80,7 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
         </div>
         {shouldShowTotal() ? (
           <span class="match-history-points-total">
-            total: {formatScore(props.match.winnerTotalScore)} pts
+            total: {formatScore(props.match.winnerTotalScore)} rating
           </span>
         ) : null}
       </div>

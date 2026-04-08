@@ -13,7 +13,6 @@ import { MatchHistoryRow } from "~/components/MatchHistoryRow";
 import { PlayerGrid } from "~/components/PlayerGrid";
 import { RankingGraph } from "~/components/RankingGraph";
 import { RankingList } from "~/components/RankingList";
-import { getRematchRestriction } from "~/services/match-rules";
 import {
   calculateHistoricalMatches,
   calculateRankingTimeline,
@@ -194,19 +193,6 @@ export default function App() {
       (playerName) => playerName !== trimmedWinnerName,
     );
 
-    for (const losingPlayer of losingPlayers) {
-      const rematchRestriction = getRematchRestriction(
-        playedMatches(),
-        trimmedWinnerName,
-        losingPlayer,
-      );
-
-      if (rematchRestriction.isBlocked) {
-        setMatchError(rematchRestriction.message);
-        return false;
-      }
-    }
-
     setAppState((currentState) => ({
       ...currentState,
       playedMatches: [
@@ -298,7 +284,6 @@ export default function App() {
                 error={matchError()}
                 onCancel={toggleMatchForm}
                 onAddMatch={handleAddMatch}
-                playedMatches={playedMatches()}
                 players={rankings()}
               />
             </section>

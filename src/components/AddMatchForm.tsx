@@ -1,12 +1,11 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
-
-import type { PlayedMatch } from "~/types/app-state";
-
 import {
-  formatRematchCooldownLabel,
-  getRematchRestriction,
-} from "~/services/match-rules";
-import { calculateEarnedPoints, type RankedPlayer } from "~/services/ranking";
+  calculateSoloTeamMatchPreview,
+} from "~/services/elo-scoring";
+import {
+  formatScore,
+  type RankedPlayer,
+} from "~/services/ranking";
 
 import "./AddMatchForm.css";
 import { BinIcon } from "./BinIcon";
@@ -15,33 +14,23 @@ type AddMatchFormProps = {
   error?: string;
   onCancel: () => void;
   onAddMatch: (selectedPlayerNames: string[], winnerName: string) => boolean;
-  playedMatches: PlayedMatch[];
   players: RankedPlayer[];
 };
 
-type OpponentPreview = {
-  availableAtLabel: string | null;
-  cooldownLabel: string;
-  isBlocked: boolean;
-  message: string;
-  opponentName: string;
-  points: number | null;
+type RatingPreviewRow = {
+  label: string;
+  ratingChange: number;
+  tone: "negative" | "positive";
 };
 
 const formatPlayerLabel = (player: RankedPlayer) => {
-  return `#${player.rank} ${player.name} (L${player.difficultyLevel})`;
+  return `#${player.rank} ${player.name} (${formatScore(player.score)} rating)`;
 };
 
-const formatPointLabel = (points: number) => {
-  return `(+${points}${points === 1 ? "pt" : "pts"})`;
-};
+const formatRatingChange = (value: number) => {
+  const prefix = value >= 0 ? "+" : "";
 
-const formatDateLabel = (value: Date) => {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(value);
+  return `${prefix}${formatScore(value)} rating`;
 };
 
 export function AddMatchForm(props: AddMatchFormProps) {
@@ -65,68 +54,54 @@ export function AddMatchForm(props: AddMatchFormProps) {
     return props.players.filter((player) => !selectedNames.has(player.name));
   });
 
-  const opponentPreview = createMemo<OpponentPreview[]>(() => {
+  const matchPreview = createMemo(() => {
     const selectedWinner = findPlayer(winnerName());
-
-    if (!selectedWinner) {
-      return [];
-    }
-
-    return selectedPlayers()
-      .filter((player) => player.name !== selectedWinner.name)
-      .map((player) => {
-        const rematchRestriction = getRematchRestriction(
-          props.playedMatches,
-          selectedWinner.name,
-          player.name,
-        );
-
-        if (rematchRestriction.isBlocked) {
-          return {
-            availableAtLabel: rematchRestriction.availableAt
-              ? formatDateLabel(rematchRestriction.availableAt)
-              : null,
-            cooldownLabel: formatRematchCooldownLabel(),
-            isBlocked: true,
-            message: rematchRestriction.message,
-            opponentName: player.name,
-            points: null,
-          };
-        }
-
-        return {
-          availableAtLabel: null,
-          cooldownLabel: formatRematchCooldownLabel(),
-          isBlocked: false,
-          message: "",
-          opponentName: player.name,
-          points: calculateEarnedPoints(
-            selectedWinner.difficultyLevel,
-            player.difficultyLevel,
-          ),
-        };
-      });
-  });
-
-  const rematchRestrictions = createMemo(() => {
-    return opponentPreview().filter((preview) => preview.isBlocked);
-  });
-
-  const winnerPointsPreview = createMemo(() => {
-    const eligibleOpponents = opponentPreview().filter(
-      (preview) => !preview.isBlocked && preview.points !== null,
+    const losingPlayers = selectedPlayers().filter(
+      (player) => player.name !== winnerName(),
     );
 
-    if (eligibleOpponents.length === 0) {
+    if (!selectedWinner || losingPlayers.length === 0) {
       return null;
     }
 
-    return eligibleOpponents.reduce((bestPreview, currentPreview) => {
-      const bestPoints = bestPreview.points ?? 0;
-      const currentPoints = currentPreview.points ?? 0;
+    return calculateSoloTeamMatchPreview(selectedWinner, losingPlayers);
+  });
 
-      return currentPoints > bestPoints ? currentPreview : bestPreview;
+  const ratingPreviewRows = createMemo<RatingPreviewRow[]>(() => {
+    const preview = matchPreview();
+
+    if (!preview) {
+      return [];
+    }
+
+    const rows: RatingPreviewRow[] = [
+      {
+        label: winnerName(),
+        ratingChange: preview.soloRatingChange,
+        tone: "positive",
+      },
+    ];
+
+    let losingPlayerIndex = 0;
+
+    selectedPlayers().forEach((player) => {
+      if (player.name === winnerName()) {
+        return;
+      }
+
+      rows.push({
+        label: player.name,
+        ratingChange: preview.losingPlayerChanges[losingPlayerIndex] ?? 0,
+        tone: "negative",
+      });
+      losingPlayerIndex += 1;
     });
+
+    return rows;
+  });
+
+  const canConfirmMatch = createMemo(() => {
+    return selectedPlayerNames().length >= 2 && winnerName().trim().length > 0;
   });
 
   const addSelectedPlayer = (rawPlayerName: string) => {
@@ -219,59 +194,51 @@ export function AddMatchForm(props: AddMatchFormProps) {
         </div>
       </div>
 
-      <Show when={winnerName() && winnerPointsPreview()}>
+      <Show when={winnerName() && matchPreview()}>
         <fieldset class="winner-options">
-          <legend class="field-label">Winner points preview</legend>
-          <Show when={winnerPointsPreview()}>
+          <legend class="field-label">Rating change preview</legend>
+          <Show when={matchPreview()}>
             {(preview) => (
               <p class="winner-single-preview">
-                {winnerName()} earns
+                Virtual team rating: {formatScore(preview().teamRating)}
                 <span class="winner-choice-points">
-                  {formatPointLabel(preview().points ?? 0)}
+                  {formatRatingChange(preview().soloRatingChange)}
                 </span>
-                from highest eligible opponent: {preview().opponentName}
               </p>
             )}
           </Show>
+          <ul class="winner-preview-list">
+            <For each={ratingPreviewRows()}>
+              {(row) => (
+                <li class="winner-preview-item">
+                  <span>{row.label}</span>
+                  <span
+                    class="winner-choice-points"
+                    classList={{
+                      "is-negative": row.tone === "negative",
+                      "is-positive": row.tone === "positive",
+                    }}
+                  >
+                    {formatRatingChange(row.ratingChange)}
+                  </span>
+                </li>
+              )}
+            </For>
+          </ul>
         </fieldset>
       </Show>
 
-      <Show when={winnerName() && opponentPreview().length > 0}>
-        <div class="restriction-list" role="status" aria-live="polite">
-          <For each={opponentPreview()}>
-            {(preview) => (
-              <p class="restriction-message" classList={{ "is-blocked": preview.isBlocked }}>
-                <strong>{preview.opponentName}:</strong>{" "}
-                <Show
-                  when={!preview.isBlocked}
-                  fallback={
-                    <span>
-                      Not rematch possible yet (played in last {preview.cooldownLabel})
-                      <Show when={preview.availableAtLabel}>
-                        <span>. Available at {preview.availableAtLabel}</span>
-                      </Show>
-                    </span>
-                  }
-                >
-                  <span>
-                    Eligible now, winner earns {formatPointLabel(preview.points ?? 0)}.
-                  </span>
-                </Show>
-              </p>
-            )}
-          </For>
-        </div>
+      <Show when={selectedPlayerNames().length >= 2 && !winnerName()}>
+        <p class="winner-selection-hint" role="status" aria-live="polite">
+          Select one of the selected players as winner to enable Confirm match.
+        </p>
       </Show>
 
       <div class="form-actions">
         <button
           class="primary-button"
           type="submit"
-          disabled={
-            selectedPlayerNames().length < 2 ||
-            !winnerName() ||
-            rematchRestrictions().length > 0
-          }
+          disabled={!canConfirmMatch()}
         >
           Confirm match
         </button>

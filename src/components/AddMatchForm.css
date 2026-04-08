@@ -126,6 +126,23 @@
   font-weight: 600;
 }
 
+.winner-choice-points.is-negative {
+  color: #a61b1b;
+}
+
+.winner-choice-points.is-positive {
+  color: #1f6a35;
+}
+
+.winner-selection-hint {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(17, 37, 60, 0.12);
+  border-radius: 0.85rem;
+  background-color: rgba(17, 37, 60, 0.04);
+  color: var(--muted-color);
+}
+
 .primary-button {
   width: fit-content;
   min-width: 9rem;
@@ -156,28 +173,6 @@
 .primary-button:focus-visible {
   outline: 3px solid rgba(180, 90, 34, 0.22);
   outline-offset: 2px;
-}
-
-.restriction-list {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.restriction-message {
-  margin: 0;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(180, 90, 34, 0.24);
-  border-radius: 0.9rem;
-  background-color: rgba(44, 129, 70, 0.08);
-  border-color: rgba(44, 129, 70, 0.24);
-  color: #1f6a35;
-  line-height: 1.5;
-}
-
-.restriction-message.is-blocked {
-  background-color: rgba(180, 90, 34, 0.08);
-  border-color: rgba(180, 90, 34, 0.24);
-  color: var(--accent-color-strong);
 }
 
 .form-actions {

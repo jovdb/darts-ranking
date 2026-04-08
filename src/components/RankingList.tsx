@@ -9,16 +9,12 @@ type RankingListProps = {
   rankings: RankedPlayer[];
 };
 
-const getDifficultyLevelTitle = (difficultyLevel: RankedPlayer["difficultyLevel"]) => {
-  if (difficultyLevel === 3) {
-    return "Level 3: When in top 25% of ranking";
+const getKFactorTitle = (player: RankedPlayer) => {
+  if (player.isInPlacement) {
+    return `Placement phase: ${player.matchCount}/10 matches played, K=${player.kFactor}`;
   }
 
-  if (difficultyLevel === 2) {
-    return "Level 2: When in top 50% of ranking";
-  }
-
-  return "Level 1: Outside the current top-tier thresholds";
+  return `Veteran player: K=${player.kFactor}`;
 };
 
 export function RankingList(props: RankingListProps) {
@@ -77,13 +73,13 @@ export function RankingList(props: RankingListProps) {
                 </div>
                 <div class="ranking-metrics">
                   <span class="ranking-score">
-                    {formatScore(player.score)} pts
+                    {formatScore(player.score)} rating
                   </span>
                   <span
                     class="difficulty-badge"
-                    title={getDifficultyLevelTitle(player.difficultyLevel)}
+                    title={getKFactorTitle(player)}
                   >
-                    L{player.difficultyLevel}
+                    K{player.kFactor}
                   </span>
                 </div>
               </div>
