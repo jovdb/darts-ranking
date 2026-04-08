@@ -80,6 +80,7 @@ The scoring system will be calculated from state using the following logic:
 - Start every player at a default Elo rating.
 - Treat the selected winner as the solo player and all selected losing players as the opposing team.
 - Calculate rating changes per losing player against the winner, summing the winner's gains from all opponents.
+- For matches with more than 2 players, divide all earnings and losses by (#players - 1).
 - Use a placement phase with K=60 for a player's first 10 matches, then K=32 afterwards.
 - Update the solo winner with the full Elo gain for beating each opponent.
 - Update each losing team member with their individual Elo loss based on their expected score against the winner.

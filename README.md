@@ -1,45 +1,33 @@
 # Darts Ranking System
 
-Welcome to the Smartphoto Darts Ranking App! \
-This is a fun way to keep track of darts matches among players. It calculates rankings based on who wins and how challenging the opponents are.
-Let's break it down simply.
+Welcome to the Smartphoto Darts Ranking App! 🎯\
+This is a fun way to keep track of darts matches among players using a smart rating system.
 
-## How It Works
+## How Rankings Work
 
-### Starting Out
+### The Basics
 
-- Every player begins with 0 points.
-- As you play matches, winners earn points based on the match.
+- Every player starts with a rating of 1000 points
+- When players compete, the winner gains rating points and losers lose points
+- The bigger the upset (lower-rated player wins), the more points change hands
+- The system rewards beating stronger opponents and penalizes losing to weaker ones
 
-### Playing Matches
+### Match Types
 
-- When someone wins a match, they get points. The number of points depends on the difficulty levels of the players involved.
-- Points are calculated as: **at least 1 point, plus the difference between the loser's level and the winner's level**.
-- For example, if a Level 1 player beats a Level 3 player, they get 1 + (3 - 1) = 3 points.
-- If a Level 2 player beats another Level 2 player, they get 1 + (2 - 2) = 1 point.
+**Head-to-Head (1 vs 1):**
+- Higher-rated player wins: Small rating changes
+- Lower-rated player wins: Big rating changes (surprise victory!)
 
-### Difficulty Levels
-
-Players get levels based on their ranking position:
-
-- **Level 1 (L1)**: The default level for everyone.
-- **Level 2 (L2)**: For players in the top half of the rankings \
-   Only active when there are more than 3 different ranking positions.
-- **Level 3 (L3)**: For players in the top quarter of the rankings \
-   Only active when there are more than 4 different ranking positions.
-
-### Time Matters
-
-- Only matches from the last 3 months count toward rankings. Older matches are forgotten to keep things fresh.
-- You can't play the same opponent again within 4 weeks to encourage variety.
+**Team Matches (1 vs Multiple):**
+- Winner gets points for beating each opponent individually
+- Each loser loses points based on their personal matchup
+- For bigger groups (3+ players), all rating changes are scaled down to keep things fair
 
 ## Getting Started
 
-To use the app:
+1. Visit: https://jovdb.github.io/darts-ranking
+2. Add your players
+3. Record matches by selecting players and picking the winner
+4. Check out rankings, match history, and player stats
 
-1. Goto: https://jovdb.github.io/darts-ranking
-2. Add players.
-3. Record matches by selecting two players and picking the winner.
-4. View the rankings and match history.
-
-Enjoy your darts games!
+Enjoy your darts games! 🏆

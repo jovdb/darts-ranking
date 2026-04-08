@@ -1,6 +1,6 @@
 export const DEFAULT_ELO_RATING = 1000;
 export const PLACEMENT_MATCH_LIMIT = 10;
-export const PLACEMENT_K_FACTOR = 60;
+export const PLACEMENT_K_FACTOR = 32;
 export const VETERAN_K_FACTOR = 32;
 export const ELO_DIVISOR = 400;
 export const MINIMUM_WIN_GAIN = 1;
@@ -52,21 +52,32 @@ export const calculateSoloTeamMatchPreview = (
   for (const loser of teamPlayers) {
     const expectedSoloScore = calculateExpectedSoloScore(soloPlayer.score, loser.score);
     totalExpectedSoloScore += expectedSoloScore;
-    
+
     // Winner's gain from this specific loser
     const gainFromThisLoser = soloKFactor * (1 - expectedSoloScore);
     totalSoloRatingChange += normalizeWinnerGain(gainFromThisLoser);
-    
-    // Loser's change
+
+    // Loser's change based on their individual matchup with winner
     const loserKFactor = getKFactor(loser.matchCount);
     const loserChange = loserKFactor * (expectedSoloScore - 1); // Negative for loss
     losingPlayerChanges.push(loserChange);
   }
 
+  // For matches with > 2 players, divide earnings/losses by (#players - 1)
+  // Total players = 1 (winner) + teamPlayers.length (losers)
+  const totalPlayers = 1 + teamPlayers.length;
+  if (totalPlayers > 2) {
+    const divisor = totalPlayers - 1; // = number of losers
+    totalSoloRatingChange /= divisor;
+    for (let i = 0; i < losingPlayerChanges.length; i++) {
+      losingPlayerChanges[i] /= divisor;
+    }
+  }
+
   const averageExpectedSoloScore = teamPlayers.length > 0 ? totalExpectedSoloScore / teamPlayers.length : 0;
   const averageTeamExpectedScore = 1 - averageExpectedSoloScore;
-  const averageTeamRating = teamPlayers.length > 0 
-    ? teamPlayers.reduce((sum, player) => sum + player.score, 0) / teamPlayers.length 
+  const averageTeamRating = teamPlayers.length > 0
+    ? teamPlayers.reduce((sum, player) => sum + player.score, 0) / teamPlayers.length
     : DEFAULT_ELO_RATING;
 
   return {
