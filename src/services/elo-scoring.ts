@@ -1,6 +1,6 @@
 export const DEFAULT_ELO_RATING = 1000;
-export const PLACEMENT_MATCH_LIMIT = 10;
-export const PLACEMENT_K_FACTOR = 32;
+export const PLACEMENT_MATCH_LIMIT = 5;
+export const PLACEMENT_K_FACTOR = 50;
 export const VETERAN_K_FACTOR = 32;
 export const ELO_DIVISOR = 400;
 export const MINIMUM_WIN_GAIN = 1;
@@ -48,6 +48,7 @@ export const calculateSoloTeamMatchPreview = (
   let totalSoloRatingChange = 0;
   const losingPlayerChanges: number[] = [];
   let totalExpectedSoloScore = 0;
+  const loserWeights: number[] = [];
 
   for (const loser of teamPlayers) {
     const expectedSoloScore = calculateExpectedSoloScore(
@@ -60,10 +61,26 @@ export const calculateSoloTeamMatchPreview = (
     const gainFromThisLoser = soloKFactor * (1 - expectedSoloScore);
     totalSoloRatingChange += normalizeWinnerGain(gainFromThisLoser);
 
-    // Loser's change based on their individual matchup with winner
+    // Calculate weight for loser using same formula as winner
     const loserKFactor = getKFactor(loser.matchCount);
-    const loserChange = loserKFactor * (expectedSoloScore - 1); // Negative for loss
-    losingPlayerChanges.push(loserChange);
+    const loserWeight = loserKFactor * (1 - expectedSoloScore);
+    loserWeights.push(loserWeight);
+  }
+
+  // Calculate total weight
+  const totalWeight = loserWeights.reduce((sum, weight) => sum + weight, 0);
+
+  // Distribute winner's points proportionally among losers (as negative)
+  if (totalWeight > 0) {
+    for (let i = 0; i < teamPlayers.length; i++) {
+      const proportion = loserWeights[i] / totalWeight;
+      const loserChange = - (proportion * totalSoloRatingChange);
+      losingPlayerChanges.push(loserChange);
+    }
+  } else {
+    // Fallback if no weights (shouldn't happen)
+    const equalShare = -totalSoloRatingChange / teamPlayers.length;
+    losingPlayerChanges.push(...Array(teamPlayers.length).fill(equalShare));
   }
 
   // For matches with > 2 players, divide earnings/losses by (#players - 1)

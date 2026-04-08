@@ -46,6 +46,7 @@ export type RankingTimelineSnapshot = {
   matchIndex: number;
   playerRatingChanges: { playerName: string; ratingChange: number }[];
   rankings: RankedPlayer[];
+  rankingsBeforeMatch: RankedPlayer[];
   winningPlayer: string;
 };
 
@@ -282,6 +283,7 @@ const toRankingTimelineSnapshot = (
     matchIndex: progressMatch.matchIndex,
     playerRatingChanges,
     rankings: progressMatch.rankingsAfterMatch,
+    rankingsBeforeMatch: progressMatch.rankingsBeforeMatch,
     winningPlayer: progressMatch.match.winningPlayer,
   };
 };

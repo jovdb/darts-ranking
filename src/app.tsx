@@ -313,7 +313,7 @@ export default function App() {
             >
               <div class="card-header popup-header">
                 <div>
-                  <h2 id="add-match-title">Start a match</h2>
+                  <h2 id="add-match-title">Add match</h2>
                 </div>
               </div>
               <AddMatchForm

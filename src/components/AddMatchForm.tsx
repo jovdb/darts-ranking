@@ -26,6 +26,19 @@ const formatPlayerLabel = (player: RankedPlayer) => {
   return `#${player.rank} ${player.name} (${formatScore(player.score)} rating)`;
 };
 
+const calculateExpectedWinPercentage = (player: RankedPlayer, allPlayers: RankedPlayer[]) => {
+  const opponents = allPlayers.filter(p => p.name !== player.name);
+  if (opponents.length === 0) return 0;
+
+  // Calculate expected score against each opponent and average them
+  const expectedScores = opponents.map(opponent =>
+    calculateExpectedSoloScore(player.score, opponent.score)
+  );
+
+  const averageExpectedScore = expectedScores.reduce((sum, score) => sum + score, 0) / expectedScores.length;
+  return Math.round(averageExpectedScore * 100);
+};
+
 const formatRatingChange = (value: number) => {
   const prefix = value >= 0 ? "+" : "";
 
@@ -42,36 +55,27 @@ const getRatingChangeTooltip = (
 
   if (!player || !winner) return "";
 
+  const kFactor = getKFactor(player.matchCount);
+
   if (playerName === winnerName) {
-    // Winner's tooltip - shows gains from each opponent
-    const opponentGains = selectedPlayers
-      .filter((p) => p.name !== winnerName)
-      .map((opponent) => {
-        const expectedScore = calculateExpectedSoloScore(
-          winner.score,
-          opponent.score,
-        );
-        const kFactor = getKFactor(winner.matchCount);
-        const rawGain = kFactor * (1 - expectedScore);
-        const gain = rawGain > 0 && rawGain < 1 ? 1 : Math.round(rawGain);
-        return `${gain}pts vs ${opponent.name}`;
-      });
+    // Winner's tooltip - calculate average expected score across all opponents
+    const opponents = selectedPlayers.filter((p) => p.name !== winnerName);
+    const expectedScores = opponents.map((opponent) => {
+      return calculateExpectedSoloScore(winner.score, opponent.score);
+    });
 
-    const totalGain = opponentGains.reduce(
-      (sum, gain) => sum + parseInt(gain.split("pts")[0]),
-      0,
-    );
-    return `Winner gains: ${opponentGains.join(" + ")} = ${totalGain}pts total`;
+    const averageExpectedScore = expectedScores.reduce((sum, score) => sum + score, 0) / expectedScores.length;
+    const expectedPercentage = Math.round(averageExpectedScore * 100);
+    const totalPoints = Math.round(kFactor * (1 - averageExpectedScore));
+
+    return `(1 - ${expectedPercentage}%) of K${kFactor} = ${totalPoints} points`;
   } else {
-    // Loser's tooltip - shows loss calculation
-    const expectedScore = calculateExpectedSoloScore(
-      winner.score,
-      player.score,
-    );
-    const kFactor = getKFactor(player.matchCount);
-    const loss = Math.round(kFactor * (expectedScore - 1));
+    // Loser's tooltip - calculate expected score against winner
+    const expectedScore = calculateExpectedSoloScore(winner.score, player.score);
+    const expectedPercentage = Math.round(expectedScore * 100);
+    const points = Math.round(kFactor * (expectedScore - 1));
 
-    return `Loser: K=${kFactor} × (${(expectedScore * 100).toFixed(1)}% - 100%) = ${loss}pts`;
+    return `(1 - ${expectedPercentage}%) of K${kFactor} = ${points} points`;
   }
 };
 
@@ -201,6 +205,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
                 onClick={() => setWinnerName(player.name)}
               >
                 <span>{formatPlayerLabel(player)}</span>
+                <span class="selected-player-expected-win">
+                  {calculateExpectedWinPercentage(player, selectedPlayers())}% win chance
+                </span>
                 <Show when={winnerName() === player.name}>
                   <span class="selected-player-winner-tag">Winner</span>
                 </Show>

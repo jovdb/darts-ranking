@@ -268,8 +268,12 @@ export function RankingGraph(props: RankingGraphProps) {
 
       // Create detailed tooltip content
       const playerChanges = snapshot.playerRatingChanges.map((change) => {
+        const playerBeforeMatch = snapshot.rankingsBeforeMatch.find(
+          (player) => player.name === change.playerName,
+        );
+        const ratingBefore = playerBeforeMatch?.score ?? 0;
         const prefix = change.ratingChange >= 0 ? "+" : "";
-        return `${change.playerName}: ${prefix}${formatScore(change.ratingChange)}`;
+        return `${change.playerName}: ${formatScore(ratingBefore)} ${prefix}${formatScore(change.ratingChange)} points`;
       });
 
       return {

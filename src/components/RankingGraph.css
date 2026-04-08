@@ -99,6 +99,7 @@
 .ranking-graph-tooltip-date {
   color: var(--muted-color);
   font-size: 0.82rem;
+  font-weight: 500;
   margin-bottom: 0.25rem;
 }
 

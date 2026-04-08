@@ -39,6 +39,13 @@
   box-shadow: 0 0 0 3px rgba(180, 90, 34, 0.1);
 }
 
+.selected-player-expected-win {
+  color: var(--muted-color);
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
 .selected-player-winner-tag {
   color: var(--accent-color-strong);
   font-size: 0.82rem;
