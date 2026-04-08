@@ -47,18 +47,12 @@ export function PlayerGrid(props: PlayerGridProps) {
   const winnerTotalWins = createMemo(() => {
     const totals = new Map<string, number>();
 
-    for (const winner of props.players) {
-      let totalWins = 0;
-
-      for (const loser of props.players) {
-        if (loser.name === winner.name) {
-          continue;
-        }
-
-        totalWins += getWins(winner.name, loser.name);
-      }
-
-      totals.set(winner.name, totalWins);
+    for (const player of props.players) {
+      // Count matches where this player was the winner
+      const matchesWon = props.playedMatches.filter(
+        (match) => match.winningPlayer === player.name
+      ).length;
+      totals.set(player.name, matchesWon);
     }
 
     return totals;
@@ -67,18 +61,28 @@ export function PlayerGrid(props: PlayerGridProps) {
   const loserTotalLosses = createMemo(() => {
     const totals = new Map<string, number>();
 
-    for (const loser of props.players) {
-      let totalLosses = 0;
-
-      for (const winner of props.players) {
-        if (winner.name === loser.name) {
-          continue;
+    for (const player of props.players) {
+      // Count matches where this player was a loser
+      let matchesLost = 0;
+      for (const match of props.playedMatches) {
+        if (match.losingPlayers.includes(player.name)) {
+          matchesLost += 1;
         }
-
-        totalLosses += getWins(winner.name, loser.name);
       }
+      totals.set(player.name, matchesLost);
+    }
 
-      totals.set(loser.name, totalLosses);
+    return totals;
+  });
+
+  const playerTotalMatches = createMemo(() => {
+    const totals = new Map<string, number>();
+
+    for (const player of props.players) {
+      const matchesPlayed = props.playedMatches.filter(
+        (match) => match.winningPlayer === player.name || match.losingPlayers.includes(player.name)
+      ).length;
+      totals.set(player.name, matchesPlayed);
     }
 
     return totals;
@@ -246,6 +250,7 @@ export function PlayerGrid(props: PlayerGridProps) {
                                 <button
                                   class="player-grid-cell-button"
                                   type="button"
+                                  title={`${winner.name} did win ${wins()} time(s) from ${loser.name}`}
                                   onClick={() =>
                                     openMatchupHistory(winner.name, loser.name)
                                   }
@@ -261,6 +266,7 @@ export function PlayerGrid(props: PlayerGridProps) {
                         <button
                           class="player-grid-summary-button"
                           type="button"
+                          title={`${loser.name} did lose ${loserTotalLosses().get(loser.name) ?? 0}/${playerTotalMatches().get(loser.name) ?? 0} matches`}
                           onClick={() =>
                             openPlayerSummaryHistory(loser.name, "losses")
                           }
@@ -284,6 +290,7 @@ export function PlayerGrid(props: PlayerGridProps) {
                         <button
                           class="player-grid-summary-button"
                           type="button"
+                          title={`${winner.name} did win ${winnerTotalWins().get(winner.name) ?? 0}/${playerTotalMatches().get(winner.name) ?? 0} matches`}
                           onClick={() =>
                             openPlayerSummaryHistory(winner.name, "wins")
                           }
@@ -297,9 +304,10 @@ export function PlayerGrid(props: PlayerGridProps) {
                     <button
                       class="player-grid-summary-button"
                       type="button"
+                      title={`Total of ${props.playedMatches.length} matches are played`}
                       onClick={openAllMatchesHistory}
                     >
-                      {props.historicalMatches.length}
+                      {props.playedMatches.length}
                     </button>
                   </td>
                 </tr>
