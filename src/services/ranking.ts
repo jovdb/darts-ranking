@@ -33,8 +33,8 @@ export type HistoricalMatchPlayer = {
 export type HistoricalMatch = {
   datePlayedGmt: string;
   earnedPoints: number;
-  losingPlayer: HistoricalMatchPlayer;
-  losingPlayerRatingChange: number;
+  losingPlayers: HistoricalMatchPlayer[];
+  losingPlayerRatingChanges: number[];
   winnerTotalScore: number;
   winningPlayer: HistoricalMatchPlayer;
 };
@@ -240,14 +240,16 @@ const collectProgress = (
 const toHistoricalMatches = (
   progressMatch: RankingProgressMatch,
 ): HistoricalMatch[] => {
-  return progressMatch.losingPlayersBeforeMatch.map((losingPlayerProgress) => ({
-    datePlayedGmt: progressMatch.match.datePlayedGmt,
-    earnedPoints: progressMatch.earnedPoints,
-    losingPlayer: losingPlayerProgress.player,
-    losingPlayerRatingChange: losingPlayerProgress.ratingChange,
-    winnerTotalScore: progressMatch.winnerTotalScoreAfterMatch,
-    winningPlayer: progressMatch.winningPlayerBeforeMatch,
-  }));
+  return [
+    {
+      datePlayedGmt: progressMatch.match.datePlayedGmt,
+      earnedPoints: progressMatch.earnedPoints,
+      losingPlayers: progressMatch.losingPlayersBeforeMatch.map((losingPlayerProgress) => losingPlayerProgress.player),
+      losingPlayerRatingChanges: progressMatch.losingPlayersBeforeMatch.map((losingPlayerProgress) => losingPlayerProgress.ratingChange),
+      winnerTotalScore: progressMatch.winnerTotalScoreAfterMatch,
+      winningPlayer: progressMatch.winningPlayerBeforeMatch,
+    },
+  ];
 };
 
 const toRankingTimelineSnapshot = (

@@ -98,7 +98,7 @@ export function PlayerGrid(props: PlayerGridProps) {
     return props.historicalMatches.filter((match) => {
       return (
         match.winningPlayer.name === matchup.winnerName &&
-        match.losingPlayer.name === matchup.loserName
+        match.losingPlayers.some((loser) => loser.name === matchup.loserName)
       );
     });
   });
@@ -114,7 +114,7 @@ export function PlayerGrid(props: PlayerGridProps) {
       if (summary.type === "all") {
         return (
           match.winningPlayer.name === summary.playerName ||
-          match.losingPlayer.name === summary.playerName
+          match.losingPlayers.some((loser) => loser.name === summary.playerName)
         );
       }
 
@@ -122,7 +122,7 @@ export function PlayerGrid(props: PlayerGridProps) {
         return match.winningPlayer.name === summary.playerName;
       }
 
-      return match.losingPlayer.name === summary.playerName;
+      return match.losingPlayers.some((loser) => loser.name === summary.playerName);
     });
   });
 

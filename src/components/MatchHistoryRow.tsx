@@ -49,7 +49,15 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
       return `+${formatScore(props.match.earnedPoints)} rating`;
     }
 
-    return `${formatScore(props.match.losingPlayerRatingChange)} rating`;
+    // Find the focused player's rating change if they're a loser
+    const focusedPlayerIndex = props.match.losingPlayers.findIndex(
+      (player) => player.name === props.focusedPlayerName
+    );
+    if (focusedPlayerIndex >= 0) {
+      return `${formatScore(props.match.losingPlayerRatingChanges[focusedPlayerIndex])} rating`;
+    }
+
+    return `+${formatScore(props.match.earnedPoints)} rating`;
   };
   const shouldShowTotal = () => {
     if (!props.focusedPlayerName) {
@@ -67,7 +75,14 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
             {formatHistoricalPlayerLabel(props.match.winningPlayer)}
           </span>
           <span class="match-history-separator">beat</span>
-          <span>{formatHistoricalPlayerLabel(props.match.losingPlayer)}</span>
+          <span>
+            {props.match.losingPlayers.map((loser, index) => (
+              <span key={loser.name}>
+                {formatHistoricalPlayerLabel(loser)}
+                {index < props.match.losingPlayers.length - 1 ? ", " : ""}
+              </span>
+            ))}
+          </span>
         </div>
         <span class="match-history-date">
           {formatMatchDate(props.match.datePlayedGmt)}

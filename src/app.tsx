@@ -62,12 +62,12 @@ export default function App() {
       }
 
       if (selectedHistory.type === "losses") {
-        return match.losingPlayer.name === selectedHistory.playerName;
+        return match.losingPlayers.some((loser) => loser.name === selectedHistory.playerName);
       }
 
       return (
         match.winningPlayer.name === selectedHistory.playerName ||
-        match.losingPlayer.name === selectedHistory.playerName
+        match.losingPlayers.some((loser) => loser.name === selectedHistory.playerName)
       );
     });
   });
