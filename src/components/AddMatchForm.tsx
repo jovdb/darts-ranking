@@ -4,7 +4,7 @@ import {
   getKFactor,
   calculateExpectedSoloScore,
 } from "~/services/elo-scoring";
-import { formatScore, type RankedPlayer } from "~/services/ranking";
+import { formatScore, type RankedPlayer, type PlayedMatch } from "~/services/ranking";
 
 import "./AddMatchForm.css";
 import { BinIcon } from "./BinIcon";
@@ -14,6 +14,7 @@ type AddMatchFormProps = {
   onCancel: () => void;
   onAddMatch: (selectedPlayerNames: string[], winnerName: string) => boolean;
   players: RankedPlayer[];
+  playedMatches: PlayedMatch[];
 };
 
 type RatingPreviewRow = {
@@ -152,6 +153,29 @@ export function AddMatchForm(props: AddMatchFormProps) {
     return selectedPlayerNames().length >= 2 && winnerName().trim().length > 0;
   });
 
+  const getLastMatchPlayers = createMemo(() => {
+    if (props.playedMatches.length === 0) return null;
+
+    const lastMatch = props.playedMatches[props.playedMatches.length - 1];
+    return [lastMatch.winningPlayer, ...lastMatch.losingPlayers];
+  });
+
+  const handleRematch = () => {
+    const lastMatchPlayers = getLastMatchPlayers();
+    if (!lastMatchPlayers) return;
+
+    // Clear current selection and add last match players
+    setSelectedPlayerNames([]);
+    setWinnerName("");
+
+    // Add all players from last match
+    lastMatchPlayers.forEach(playerName => {
+      if (props.players.some(p => p.name === playerName)) {
+        setSelectedPlayerNames(current => [...current, playerName]);
+      }
+    });
+  };
+
   const addSelectedPlayer = (rawPlayerName: string) => {
     const nextPlayerName = rawPlayerName.trim();
 
@@ -225,23 +249,35 @@ export function AddMatchForm(props: AddMatchFormProps) {
         </For>
 
         <div class="selected-player-row selected-player-row-add">
-          <select
-            id="next-player"
-            class="select-input"
-            value={playerToAdd()}
-            onInput={(event) => {
-              const nextPlayerName = event.currentTarget.value;
-              setPlayerToAdd(nextPlayerName);
-              addSelectedPlayer(nextPlayerName);
-            }}
-          >
-            <option value="">Select a player</option>
-            <For each={availablePlayers()}>
-              {(player) => (
-                <option value={player.name}>{formatPlayerLabel(player)}</option>
-              )}
-            </For>
-          </select>
+          <div class="player-select-container">
+            <select
+              id="next-player"
+              class="select-input"
+              value={playerToAdd()}
+              onInput={(event) => {
+                const nextPlayerName = event.currentTarget.value;
+                setPlayerToAdd(nextPlayerName);
+                addSelectedPlayer(nextPlayerName);
+              }}
+            >
+              <option value="">Select a player</option>
+              <For each={availablePlayers()}>
+                {(player) => (
+                  <option value={player.name}>{formatPlayerLabel(player)}</option>
+                )}
+              </For>
+            </select>
+            <Show when={getLastMatchPlayers()}>
+              <button
+                class="rematch-button"
+                type="button"
+                onClick={handleRematch}
+                title={`Rematch: ${getLastMatchPlayers()?.join(", ")}`}
+              >
+                Rematch
+              </button>
+            </Show>
+          </div>
         </div>
       </div>
 

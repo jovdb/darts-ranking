@@ -322,6 +322,7 @@ export default function App() {
                 onCancel={toggleMatchForm}
                 onAddMatch={handleAddMatch}
                 players={rankings()}
+                playedMatches={playedMatches()}
               />
             </section>
           </div>
