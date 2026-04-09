@@ -108,16 +108,44 @@ export function RankingGraph(props: RankingGraphProps) {
     y: number;
     matchIndex: number;
   } | null>(null);
+  const [timespanFilter, setTimespanFilter] = createSignal<"day" | "week" | "month" | "all">("all");
 
   const plotWidth = CHART_WIDTH - CHART_PADDING.left - CHART_PADDING.right;
   const plotHeight = CHART_HEIGHT - CHART_PADDING.top - CHART_PADDING.bottom;
   const graphStepCount = () => props.timeline.length + 1;
 
+  const filteredTimeline = createMemo(() => {
+    const filter = timespanFilter();
+    if (filter === "all") return props.timeline;
+
+    const now = new Date();
+    const cutoffDate = new Date();
+
+    switch (filter) {
+      case "day":
+        cutoffDate.setDate(now.getDate() - 1);
+        break;
+      case "week":
+        cutoffDate.setDate(now.getDate() - 7);
+        break;
+      case "month":
+        cutoffDate.setMonth(now.getMonth() - 1);
+        break;
+    }
+
+    return props.timeline.filter(snapshot => {
+      const matchDate = new Date(snapshot.datePlayedGmt);
+      return matchDate >= cutoffDate;
+    });
+  });
+
+  const filteredGraphStepCount = () => filteredTimeline().length + 1;
+
   const scoreRange = createMemo(() => {
     const allScores = [
       DEFAULT_ELO_RATING,
       ...props.rankings.map((ranking) => ranking.score),
-      ...props.timeline.flatMap((snapshot) => {
+      ...filteredTimeline().flatMap((snapshot) => {
         return snapshot.rankings.map((ranking) => ranking.score);
       }),
     ];
@@ -138,7 +166,7 @@ export function RankingGraph(props: RankingGraphProps) {
   });
 
   const graphSeries = createMemo(() => {
-    const stepCount = graphStepCount();
+    const stepCount = filteredGraphStepCount();
     const xStep = stepCount > 1 ? plotWidth / (stepCount - 1) : 0;
 
     return orderedPlayers().map((player) => {
@@ -163,7 +191,7 @@ export function RankingGraph(props: RankingGraphProps) {
       ];
 
       points.push(
-        ...props.timeline.map((snapshot, index) => {
+        ...filteredTimeline().map((snapshot, index) => {
           const ranking = snapshot.rankings.find(
             (rankedPlayer) => rankedPlayer.name === player.name,
           ) ?? {
@@ -229,7 +257,7 @@ export function RankingGraph(props: RankingGraphProps) {
   });
 
   const xTicks = createMemo(() => {
-    const stepCount = graphStepCount();
+    const stepCount = filteredGraphStepCount();
 
     if (stepCount === 0) {
       return [];
@@ -253,14 +281,14 @@ export function RankingGraph(props: RankingGraphProps) {
   });
 
   const matchColumns = createMemo(() => {
-    const matchCount = props.timeline.length;
-    const stepCount = graphStepCount();
+    const matchCount = filteredTimeline().length;
+    const stepCount = filteredGraphStepCount();
 
     if (matchCount === 0) {
       return [];
     }
 
-    return props.timeline.map((snapshot, index) => {
+    return filteredTimeline().map((snapshot, index) => {
       const stepIndex = index + 1;
       const previousX = getStepX(stepIndex - 1, stepCount, plotWidth);
       const currentX = getStepX(stepIndex, stepCount, plotWidth);
@@ -313,6 +341,20 @@ export function RankingGraph(props: RankingGraphProps) {
             Elo rating progression by match step. The x-axis only advances when
             a match was played.
           </p>
+        </div>
+        <div class="ranking-graph-timespan-filter">
+          <label for="timespan-select" class="timespan-label">Timespan:</label>
+          <select
+            id="timespan-select"
+            class="timespan-select"
+            value={timespanFilter()}
+            onInput={(event) => setTimespanFilter(event.currentTarget.value as "day" | "week" | "month" | "all")}
+          >
+            <option value="all">All time</option>
+            <option value="month">Last month</option>
+            <option value="week">Last week</option>
+            <option value="day">Today</option>
+          </select>
         </div>
       </div>
 
