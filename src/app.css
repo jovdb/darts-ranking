@@ -229,6 +229,8 @@ select {
 
 .card-wide {
   min-height: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 @media (min-width: 900px) {
