@@ -26,7 +26,7 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
-  padding: 1.15rem 1rem 1.15rem 4.75rem;
+  padding: 0.5rem 0.5rem 0.5rem 3.5rem;
   background-color: var(--surface-strong);
   color: inherit;
   font: inherit;
@@ -42,9 +42,10 @@
 
 .ranking-rank {
   position: absolute;
+  top: 0.5rem;
   left: 0.8rem;
-  color: rgba(17, 37, 60, 0.06);
-  font-size: 5rem;
+  color: rgba(17, 37, 60, 0.1);
+  font-size: 3rem;
   line-height: 0.82;
   font-weight: 800;
   letter-spacing: -0.08em;

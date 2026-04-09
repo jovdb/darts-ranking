@@ -259,14 +259,6 @@ export default function App() {
                   {playedMatches().length} match
                   {playedMatches().length === 1 ? "" : "es"}
                 </button>
-                <button
-                  class="secondary-button ranking-header-button"
-                  type="button"
-                  disabled={players().length < 2}
-                  onClick={toggleMatchForm}
-                >
-                  Add match
-                </button>
               </div>
             </div>
             <RankingList
@@ -297,6 +289,15 @@ export default function App() {
             players={rankings()}
           />
         </div>
+
+        <button
+          class="floating-add-match-button"
+          type="button"
+          disabled={players().length < 2}
+          onClick={toggleMatchForm}
+        >
+          Add match
+        </button>
 
         <Show when={isAddingMatch()}>
           <div

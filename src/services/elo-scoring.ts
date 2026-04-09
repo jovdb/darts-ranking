@@ -1,5 +1,5 @@
 export const DEFAULT_ELO_RATING = 1000;
-export const PLACEMENT_MATCH_LIMIT = 5;
+export const PLACEMENT_MATCH_LIMIT = 8;
 export const PLACEMENT_K_FACTOR = 50;
 export const VETERAN_K_FACTOR = 32;
 export const ELO_DIVISOR = 400;

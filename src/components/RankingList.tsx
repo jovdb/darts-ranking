@@ -93,12 +93,6 @@ export function RankingList(props: RankingListProps) {
                     <span class="ranking-score">
                       {formatScore(player.score)} rating
                     </span>
-                    <span
-                      class="difficulty-badge"
-                      title={getKFactorTitle(player)}
-                    >
-                      K{player.kFactor}
-                    </span>
                   </div>
                 </div>
               </li>
