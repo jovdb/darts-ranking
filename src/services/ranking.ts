@@ -10,8 +10,8 @@ import {
 } from "~/services/percent-won-ranking";
 import {
   getRankingAlgorithmService,
-  type IRankingAlgorithmService,
 } from "~/services/ranking-algorithm";
+import type { IRankingAlgorithmService } from "~/services/ranking-interfaces";
 import type { PlayedMatch, Player, RankingAlgorithm } from "~/types/app-state";
 
 export { DEFAULT_ELO_RATING } from "~/services/elo-scoring";

@@ -1,5 +1,5 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
-import type { RankingScorePreviewRow } from "~/services/ranking-algorithm";
+import type { IRankingScorePreviewRow } from "~/services/ranking-interfaces";
 import {
   getRankingAlgorithmMetadata,
   type RankedPlayer,
@@ -53,7 +53,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
     return props.players.filter((player) => !selectedNames.has(player.name));
   });
 
-  const ratingPreviewRows = createMemo<RankingScorePreviewRow[]>(() => {
+  const ratingPreviewRows = createMemo<IRankingScorePreviewRow[]>(() => {
     if (!winnerName()) {
       return [];
     }

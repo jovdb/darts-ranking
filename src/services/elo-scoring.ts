@@ -1,8 +1,8 @@
 import type {
   IRankingAlgorithmService,
-  RankingScorePreviewRow,
-  RankingPlayerLabel,
-} from "~/services/ranking-algorithm";
+  IRankingPlayerLabel,
+  IRankingScorePreviewRow,
+} from "~/services/ranking-interfaces";
 import type { PlayedMatch, Player } from "~/types/app-state";
 import type {
   HistoricalMatch,
@@ -510,7 +510,7 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
     return `${this.formatScore(score)} rating`;
   }
 
-  formatPlayerLabel(player: RankingPlayerLabel): string {
+  formatPlayerLabel(player: IRankingPlayerLabel): string {
     return `#${player.rank} ${player.name} (${this.formatScoreWithUnit(player.score)})`;
   }
 
@@ -550,7 +550,7 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
     return this.formatScoreChange(scoreChange);
   }
 
-  formatHistoryPlayerLabel(player: RankingPlayerLabel): string {
+  formatHistoryPlayerLabel(player: IRankingPlayerLabel): string {
     return this.formatPlayerLabel(player);
   }
 
@@ -563,9 +563,9 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
   }
 
   buildScoreChangePreviewRows(
-    selectedPlayers: RankingPlayerLabel[],
+    selectedPlayers: IRankingPlayerLabel[],
     winnerName: string,
-  ): RankingScorePreviewRow[] {
+  ): IRankingScorePreviewRow[] {
     const winner = selectedPlayers.find(
       (selectedPlayer) => selectedPlayer.name === winnerName,
     );
@@ -578,7 +578,7 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
     }
 
     const preview = calculateSoloTeamMatchPreview(winner, losers);
-    const rows: RankingScorePreviewRow[] = [
+    const rows: IRankingScorePreviewRow[] = [
       {
         label: winnerName,
         scoreChange: preview.soloRatingChange,
@@ -598,8 +598,8 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
   }
 
   getExpectedWinPercentage(
-    player: RankingPlayerLabel,
-    selectedPlayers: RankingPlayerLabel[],
+    player: IRankingPlayerLabel,
+    selectedPlayers: IRankingPlayerLabel[],
   ): number {
     return calculateEloExpectedWinPercentage(player, selectedPlayers);
   }
@@ -607,7 +607,7 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
   getScoreChangePreviewTooltip(
     playerName: string,
     winnerName: string,
-    selectedPlayers: RankingPlayerLabel[],
+    selectedPlayers: IRankingPlayerLabel[],
   ): string {
     return getEloRatingChangeTooltip(playerName, winnerName, selectedPlayers);
   }

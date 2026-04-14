@@ -1,9 +1,9 @@
 import type { PlayedMatch, Player } from "~/types/app-state";
 import type {
   IRankingAlgorithmService,
-  RankingScorePreviewRow,
-  RankingPlayerLabel,
-} from "~/services/ranking-algorithm";
+  IRankingPlayerLabel,
+  IRankingScorePreviewRow,
+} from "~/services/ranking-interfaces";
 import type {
   HistoricalMatch,
   HistoricalMatchPlayer,
@@ -350,7 +350,7 @@ export class PercentWonRankingAlgorithmService
     return `${this.formatScore(score)} won`;
   }
 
-  formatPlayerLabel(player: RankingPlayerLabel): string {
+  formatPlayerLabel(player: IRankingPlayerLabel): string {
     return `#${player.rank} ${player.name} (${this.formatScoreWithUnit(player.score)})`;
   }
 
@@ -390,7 +390,7 @@ export class PercentWonRankingAlgorithmService
     return this.formatScoreChange(scoreChange);
   }
 
-  formatHistoryPlayerLabel(player: RankingPlayerLabel): string {
+  formatHistoryPlayerLabel(player: IRankingPlayerLabel): string {
     return this.formatPlayerLabel(player);
   }
 
@@ -403,9 +403,9 @@ export class PercentWonRankingAlgorithmService
   }
 
   buildScoreChangePreviewRows(
-    selectedPlayers: RankingPlayerLabel[],
+    selectedPlayers: IRankingPlayerLabel[],
     winnerName: string,
-  ): RankingScorePreviewRow[] {
+  ): IRankingScorePreviewRow[] {
     if (selectedPlayers.length < 2) {
       return [];
     }
@@ -431,8 +431,8 @@ export class PercentWonRankingAlgorithmService
   }
 
   getExpectedWinPercentage(
-    player: RankingPlayerLabel,
-    selectedPlayers: RankingPlayerLabel[],
+    player: IRankingPlayerLabel,
+    selectedPlayers: IRankingPlayerLabel[],
   ): number {
     if (selectedPlayers.length < 2) {
       return 0;
@@ -444,7 +444,7 @@ export class PercentWonRankingAlgorithmService
   getScoreChangePreviewTooltip(
     playerName: string,
     winnerName: string,
-    selectedPlayers: RankingPlayerLabel[],
+    selectedPlayers: IRankingPlayerLabel[],
   ): string {
     if (playerName !== winnerName) {
       return "";
