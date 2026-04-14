@@ -2,7 +2,7 @@ import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { MatchHistoryRow } from "~/components/MatchHistoryRow";
 import type { HistoricalMatch, RankedPlayer } from "~/services/ranking";
-import type { PlayedMatch } from "~/types/app-state";
+import type { PlayedMatch, RankingAlgorithm } from "~/types/app-state";
 
 import "./PlayerGrid.css";
 
@@ -10,6 +10,7 @@ type PlayerGridProps = {
   historicalMatches: HistoricalMatch[];
   playedMatches: PlayedMatch[];
   players: RankedPlayer[];
+  rankingAlgorithm: RankingAlgorithm;
 };
 
 const createMatchKey = (winnerName: string, loserName: string) => {
@@ -350,7 +351,12 @@ export function PlayerGrid(props: PlayerGridProps) {
             >
               <ul class="match-history-list">
                 <For each={props.historicalMatches}>
-                  {(match) => <MatchHistoryRow match={match} />}
+                  {(match) => (
+                    <MatchHistoryRow
+                      match={match}
+                      rankingAlgorithm={props.rankingAlgorithm}
+                    />
+                  )}
                 </For>
               </ul>
             </Show>
@@ -404,7 +410,12 @@ export function PlayerGrid(props: PlayerGridProps) {
             >
               <ul class="match-history-list">
                 <For each={selectedMatchupHistory()}>
-                  {(match) => <MatchHistoryRow match={match} />}
+                  {(match) => (
+                    <MatchHistoryRow
+                      match={match}
+                      rankingAlgorithm={props.rankingAlgorithm}
+                    />
+                  )}
                 </For>
               </ul>
             </Show>
@@ -473,6 +484,7 @@ export function PlayerGrid(props: PlayerGridProps) {
                     <MatchHistoryRow
                       focusedPlayerName={selectedPlayerSummary()?.playerName}
                       match={match}
+                        rankingAlgorithm={props.rankingAlgorithm}
                     />
                   )}
                 </For>

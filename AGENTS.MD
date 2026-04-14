@@ -14,6 +14,8 @@ This will be a Solid Start application to start darts games with opponents and c
 ## UI Parts
 
 - Main part is player ranking with scores.
+  - A scoring-algorithm combobox should let the user switch between `ELO ranking` and `Percent won`.
+  - Changing the scoring algorithm should update both the ranking list and the ranking graph.
   - A ranking graph section should show Elo rating over time.
   - The ranking graph should show rating vertically.
   - The ranking graph should show time horizontally, using one step per played match instead of linear wall-clock spacing.
@@ -77,6 +79,7 @@ We do not store ratings directly, so the ranking logic can change later while re
 The scoring system will be calculated from state using the following logic:
 
 - Use an Elo-based rating system calculated chronologically from the full match history.
+- Also support a dummy `Percent won` ranking mode in a separate file, calculated from each player's wins divided by matches played.
 - Start every player at a default Elo rating.
 - Treat the selected winner as the solo player and all selected losing players as the opposing team.
 - Calculate rating changes per losing player against the winner, summing the winner's gains from all opponents.

@@ -4,7 +4,13 @@ import {
   getKFactor,
   calculateExpectedSoloScore,
 } from "~/services/elo-scoring";
-import { formatScore, type RankedPlayer, type PlayedMatch } from "~/services/ranking";
+import {
+  formatScore,
+  getRankingAlgorithmMetadata,
+  type RankedPlayer,
+  type PlayedMatch,
+} from "~/services/ranking";
+import type { RankingAlgorithm } from "~/types/app-state";
 
 import "./AddMatchForm.css";
 import { BinIcon } from "./BinIcon";
@@ -15,6 +21,7 @@ type AddMatchFormProps = {
   onAddMatch: (selectedPlayerNames: string[], winnerName: string) => boolean;
   players: RankedPlayer[];
   playedMatches: PlayedMatch[];
+  rankingAlgorithm: RankingAlgorithm;
 };
 
 type RatingPreviewRow = {
@@ -23,8 +30,11 @@ type RatingPreviewRow = {
   tone: "negative" | "positive";
 };
 
-const formatPlayerLabel = (player: RankedPlayer) => {
-  return `#${player.rank} ${player.name} (${formatScore(player.score)} rating)`;
+const formatPlayerLabel = (
+  player: RankedPlayer,
+  rankingAlgorithm: RankingAlgorithm,
+) => {
+  return `#${player.rank} ${player.name} (${getRankingAlgorithmMetadata(rankingAlgorithm).formatScoreWithUnit(player.score)})`;
 };
 
 const calculateExpectedWinPercentage = (player: RankedPlayer, allPlayers: RankedPlayer[]) => {
@@ -228,7 +238,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
                 type="button"
                 onClick={() => setWinnerName(player.name)}
               >
-                <span>{formatPlayerLabel(player)}</span>
+                <span>{formatPlayerLabel(player, props.rankingAlgorithm)}</span>
                 <span class="selected-player-expected-win">
                   {calculateExpectedWinPercentage(player, selectedPlayers())}% win chance
                 </span>
@@ -263,7 +273,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
               <option value="">Select a player</option>
               <For each={availablePlayers()}>
                 {(player) => (
-                  <option value={player.name}>{formatPlayerLabel(player)}</option>
+                  <option value={player.name}>
+                    {formatPlayerLabel(player, props.rankingAlgorithm)}
+                  </option>
                 )}
               </For>
             </select>

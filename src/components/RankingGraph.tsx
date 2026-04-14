@@ -1,16 +1,17 @@
 import { For, Show, createMemo, createSignal, createEffect } from "solid-js";
 
 import {
-  DEFAULT_ELO_RATING,
-  formatScore,
+  getRankingAlgorithmMetadata,
   type RankedPlayer,
   type RankingTimelineSnapshot,
 } from "~/services/ranking";
+import type { RankingAlgorithm } from "~/types/app-state";
 
 import "./RankingGraph.css";
 import { BinIcon } from "./BinIcon";
 
 type RankingGraphProps = {
+  algorithm: RankingAlgorithm;
   rankings: RankedPlayer[];
   timeline: RankingTimelineSnapshot[];
   onDeleteMatch?: (matchIndex: number) => void;
@@ -109,10 +110,10 @@ export function RankingGraph(props: RankingGraphProps) {
     matchIndex: number;
   } | null>(null);
   const [timespanFilter, setTimespanFilter] = createSignal<"day" | "week" | "month" | "all">("all");
+  const rankingMetadata = () => getRankingAlgorithmMetadata(props.algorithm);
 
   const plotWidth = CHART_WIDTH - CHART_PADDING.left - CHART_PADDING.right;
   const plotHeight = CHART_HEIGHT - CHART_PADDING.top - CHART_PADDING.bottom;
-  const graphStepCount = () => props.timeline.length + 1;
 
   const filteredTimeline = createMemo(() => {
     const filter = timespanFilter();
@@ -143,7 +144,7 @@ export function RankingGraph(props: RankingGraphProps) {
 
   const scoreRange = createMemo(() => {
     const allScores = [
-      DEFAULT_ELO_RATING,
+      rankingMetadata().initialScore,
       ...props.rankings.map((ranking) => ranking.score),
       ...filteredTimeline().flatMap((snapshot) => {
         return snapshot.rankings.map((ranking) => ranking.score);
@@ -179,12 +180,12 @@ export function RankingGraph(props: RankingGraphProps) {
           matchIndex: -1,
           playerName: player.name,
           rank: startingRank,
-          score: DEFAULT_ELO_RATING,
+          score: rankingMetadata().initialScore,
           x: CHART_PADDING.left,
           y:
             CHART_PADDING.top +
             plotHeight -
-            ((DEFAULT_ELO_RATING - scoreRange().min) /
+            ((rankingMetadata().initialScore - scoreRange().min) /
               (scoreRange().max - scoreRange().min || 1)) *
               plotHeight,
         },
@@ -201,7 +202,7 @@ export function RankingGraph(props: RankingGraphProps) {
             matchCount: 0,
             name: player.name,
             rank: startingRank,
-            score: player.score,
+            score: rankingMetadata().initialScore,
             wins: 0,
           };
           const normalizedScore =
@@ -249,7 +250,7 @@ export function RankingGraph(props: RankingGraphProps) {
           (currentScoreRange.max - currentScoreRange.min || 1);
 
         return {
-          label: String(value),
+          label: rankingMetadata().formatScore(value),
           value,
           y: CHART_PADDING.top + plotHeight - normalizedValue * plotHeight,
         };
@@ -300,8 +301,7 @@ export function RankingGraph(props: RankingGraphProps) {
           (player) => player.name === change.playerName,
         );
         const ratingBefore = playerBeforeMatch?.score ?? 0;
-        const prefix = change.ratingChange >= 0 ? "+" : "";
-        return `${change.playerName}: ${formatScore(ratingBefore)} ${prefix}${formatScore(change.ratingChange)} points`;
+        return `${change.playerName}: ${rankingMetadata().formatScoreWithUnit(ratingBefore)}, ${rankingMetadata().formatScoreChange(change.ratingChange)}`;
       });
 
       return {
@@ -309,7 +309,7 @@ export function RankingGraph(props: RankingGraphProps) {
         datePlayedGmt: snapshot.datePlayedGmt,
         matchIndex: snapshot.matchIndex,
         playerChanges,
-        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: +${formatScore(snapshot.earnedPoints)} rating`,
+        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: ${rankingMetadata().formatScoreChange(snapshot.earnedPoints)}`,
         width,
         x: currentX,
         xStart: previousX,
@@ -338,8 +338,7 @@ export function RankingGraph(props: RankingGraphProps) {
         <div>
           <h2>Ranking timeline</h2>
           <p class="card-copy">
-            Elo rating progression by match step. The x-axis only advances when
-            a match was played.
+            {rankingMetadata().graphDescription}
           </p>
         </div>
         <div class="ranking-graph-timespan-filter">
@@ -445,7 +444,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 text-anchor="middle"
                 transform={`translate(18 ${CHART_PADDING.top + plotHeight / 2}) rotate(-90)`}
               >
-                Rating
+                {rankingMetadata().graphYAxisLabel}
               </text>
               <text
                 class="ranking-graph-axis-title"
@@ -575,6 +574,9 @@ export function RankingGraph(props: RankingGraphProps) {
               <div class="ranking-graph-tooltip-date">
                 {formatTooltipTime(activeMatchColumn()?.datePlayedGmt ?? "")}
               </div>
+              <div class="ranking-graph-tooltip-line">
+                {activeMatchColumn()?.summary}
+              </div>
               <For each={activeMatchColumn()?.playerChanges}>
                 {(change) => (
                   <div class="ranking-graph-tooltip-line">{change}</div>
@@ -630,7 +632,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 <span class="ranking-graph-legend-name">{series.name}</span>
                 <span class="ranking-graph-legend-meta">
                   #{series.latest?.rank ?? "-"} ·{" "}
-                  {formatScore(series.latest?.score ?? 0)} rating
+                  {rankingMetadata().formatScoreWithUnit(series.latest?.score ?? 0)}
                 </span>
               </li>
             )}

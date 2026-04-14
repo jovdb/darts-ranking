@@ -1,14 +1,20 @@
-import type { PlayedMatch, Player } from "~/types/app-state";
+import type { PlayedMatch, Player, RankingAlgorithm } from "~/types/app-state";
 
 import {
   calculateSoloTeamMatchPreview,
   DEFAULT_ELO_RATING,
   getKFactor,
 } from "~/services/elo-scoring";
+import {
+  calculatePercentWonHistoricalMatches,
+  calculatePercentWonRankings,
+  calculatePercentWonRankingTimeline,
+} from "~/services/percent-won-ranking";
 
 const rankingTieBreakers = new Map<string, number>();
 
 export { DEFAULT_ELO_RATING } from "~/services/elo-scoring";
+export type { PlayedMatch } from "~/types/app-state";
 
 export type RankedPlayer = {
   isInPlacement: boolean;
@@ -80,6 +86,59 @@ type PreparedMatch = {
   match: PlayedMatch;
   playedAt: Date;
   sourceIndex: number;
+};
+
+export type RankingAlgorithmMetadata = {
+  algorithm: RankingAlgorithm;
+  formatScore: (score: number) => string;
+  formatScoreChange: (score: number) => string;
+  formatScoreWithUnit: (score: number) => string;
+  graphDescription: string;
+  graphYAxisLabel: string;
+  initialScore: number;
+  label: string;
+};
+
+const formatEloScore = (score: number) => {
+  return String(Math.round(score));
+};
+
+const formatPercentWonScore = (score: number) => {
+  return `${Math.round(score)}%`;
+};
+
+const RANKING_ALGORITHM_METADATA: Record<
+  RankingAlgorithm,
+  RankingAlgorithmMetadata
+> = {
+  elo: {
+    algorithm: "elo",
+    formatScore: formatEloScore,
+    formatScoreChange: (score) => {
+      const prefix = score >= 0 ? "+" : "";
+      return `${prefix}${formatEloScore(score)} rating`;
+    },
+    formatScoreWithUnit: (score) => `${formatEloScore(score)} rating`,
+    graphDescription:
+      "Elo rating progression by match step. The x-axis only advances when a match was played.",
+    graphYAxisLabel: "Rating",
+    initialScore: DEFAULT_ELO_RATING,
+    label: "ELO ranking",
+  },
+  "percent-won": {
+    algorithm: "percent-won",
+    formatScore: formatPercentWonScore,
+    formatScoreChange: (score) => {
+      const prefix = score >= 0 ? "+" : "";
+      return `${prefix}${Math.round(score)} pp`;
+    },
+    formatScoreWithUnit: (score) => `${formatPercentWonScore(score)} won`,
+    graphDescription:
+      "Percent won progression by match step. The x-axis only advances when a match was played.",
+    graphYAxisLabel: "Percent won",
+    initialScore: 0,
+    label: "Percent won",
+  },
 };
 
 const createPlayerTotalsByName = (players: Player[]) => {
@@ -219,7 +278,7 @@ const getHistoricalMatchPlayer = (
   };
 };
 
-const collectProgress = (
+const collectEloProgress = (
   players: Player[],
   playedMatches: PlayedMatch[],
   asOf = new Date(),
@@ -362,23 +421,42 @@ export function* generateRankingProgress(
   return buildRankingsFromTotals(totalsByPlayerName);
 }
 
-export const formatScore = (score: number) => {
-  return String(Math.round(score));
+export const getRankingAlgorithmMetadata = (
+  algorithm: RankingAlgorithm,
+): RankingAlgorithmMetadata => {
+  return RANKING_ALGORITHM_METADATA[algorithm];
+};
+
+export const formatScore = (
+  score: number,
+  algorithm: RankingAlgorithm = "elo",
+) => {
+  return getRankingAlgorithmMetadata(algorithm).formatScore(score);
 };
 
 export function calculateRankings(
   players: Player[],
   playedMatches: PlayedMatch[],
+  algorithm: RankingAlgorithm = "elo",
   asOf = new Date(),
 ): RankedPlayer[] {
-  return collectProgress(players, playedMatches, asOf).finalRankings;
+  if (algorithm === "percent-won") {
+    return calculatePercentWonRankings(players, playedMatches, asOf);
+  }
+
+  return collectEloProgress(players, playedMatches, asOf).finalRankings;
 }
 
 export function calculateHistoricalMatches(
   players: Player[],
   playedMatches: PlayedMatch[],
+  algorithm: RankingAlgorithm = "elo",
 ): HistoricalMatch[] {
-  return collectProgress(players, playedMatches)
+  if (algorithm === "percent-won") {
+    return calculatePercentWonHistoricalMatches(players, playedMatches);
+  }
+
+  return collectEloProgress(players, playedMatches)
     .matches.flatMap(toHistoricalMatches)
     .reverse();
 }
@@ -386,8 +464,13 @@ export function calculateHistoricalMatches(
 export function calculateRankingTimeline(
   players: Player[],
   playedMatches: PlayedMatch[],
+  algorithm: RankingAlgorithm = "elo",
 ): RankingTimelineSnapshot[] {
-  return collectProgress(players, playedMatches).matches.map(
+  if (algorithm === "percent-won") {
+    return calculatePercentWonRankingTimeline(players, playedMatches);
+  }
+
+  return collectEloProgress(players, playedMatches).matches.map(
     toRankingTimelineSnapshot,
   );
 }

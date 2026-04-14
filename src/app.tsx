@@ -19,7 +19,11 @@ import {
   calculateRankings,
 } from "~/services/ranking";
 import { createLocalAppStorage } from "~/services/storage";
-import { createEmptyAppState, type AppState } from "~/types/app-state";
+import {
+  createEmptyAppState,
+  type AppState,
+  type RankingAlgorithm,
+} from "~/types/app-state";
 
 import "./app.css";
 
@@ -40,14 +44,28 @@ export default function App() {
 
   const players = () => appState().players;
   const playedMatches = () => appState().playedMatches;
+  const rankingAlgorithm = () => appState().rankingAlgorithm;
   const rankings = createMemo(() => {
-    return calculateRankings(players(), playedMatches(), new Date());
+    return calculateRankings(
+      players(),
+      playedMatches(),
+      rankingAlgorithm(),
+      new Date(),
+    );
   });
   const matchHistory = createMemo(() => {
-    return calculateHistoricalMatches(players(), playedMatches());
+    return calculateHistoricalMatches(
+      players(),
+      playedMatches(),
+      rankingAlgorithm(),
+    );
   });
   const rankingTimeline = createMemo(() => {
-    return calculateRankingTimeline(players(), playedMatches());
+    return calculateRankingTimeline(
+      players(),
+      playedMatches(),
+      rankingAlgorithm(),
+    );
   });
   const selectedPlayerMatchHistory = createMemo(() => {
     const selectedHistory = selectedPlayerHistory();
@@ -241,6 +259,13 @@ export default function App() {
     }));
   };
 
+  const handleRankingAlgorithmChange = (algorithm: RankingAlgorithm) => {
+    setAppState((currentState) => ({
+      ...currentState,
+      rankingAlgorithm: algorithm,
+    }));
+  };
+
   return (
     <main class="app-shell">
       <section class="app-panel">
@@ -262,6 +287,7 @@ export default function App() {
               </div>
             </div>
             <RankingList
+              algorithm={rankingAlgorithm()}
               onSelectPlayerHistory={openPlayerMatchHistory}
               rankings={rankings()}
               onDeletePlayer={handleDeletePlayer}
@@ -274,10 +300,27 @@ export default function App() {
               >
                 {isAddingPlayer() ? "Cancel" : "Add player"}
               </button>
+              <label class="ranking-algorithm-control" for="ranking-algorithm">
+                <span class="ranking-algorithm-label">Algorithm:</span>
+                <select
+                  id="ranking-algorithm"
+                  class="ranking-algorithm-select"
+                  value={rankingAlgorithm()}
+                  onInput={(event) =>
+                    handleRankingAlgorithmChange(
+                      event.currentTarget.value as RankingAlgorithm,
+                    )
+                  }
+                >
+                  <option value="elo">ELO ranking</option>
+                  <option value="percent-won">Percent won</option>
+                </select>
+              </label>
             </div>
           </section>
 
           <RankingGraph
+            algorithm={rankingAlgorithm()}
             rankings={rankings()}
             timeline={rankingTimeline()}
             onDeleteMatch={handleDeleteMatch}
@@ -287,6 +330,7 @@ export default function App() {
             historicalMatches={matchHistory()}
             playedMatches={playedMatches()}
             players={rankings()}
+            rankingAlgorithm={rankingAlgorithm()}
           />
         </div>
 
@@ -323,6 +367,7 @@ export default function App() {
                 onAddMatch={handleAddMatch}
                 players={rankings()}
                 playedMatches={playedMatches()}
+                rankingAlgorithm={rankingAlgorithm()}
               />
             </section>
           </div>
@@ -385,7 +430,12 @@ export default function App() {
               >
                 <ul class="match-history-list">
                   <For each={matchHistory()}>
-                    {(match) => <MatchHistoryRow match={match} />}
+                    {(match) => (
+                      <MatchHistoryRow
+                        match={match}
+                        rankingAlgorithm={rankingAlgorithm()}
+                      />
+                    )}
                   </For>
                 </ul>
               </Show>
@@ -453,6 +503,7 @@ export default function App() {
                       <MatchHistoryRow
                         focusedPlayerName={selectedPlayerHistory()?.playerName}
                         match={match}
+                        rankingAlgorithm={rankingAlgorithm()}
                       />
                     )}
                   </For>

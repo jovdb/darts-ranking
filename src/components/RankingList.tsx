@@ -1,11 +1,13 @@
 import { For, Show, createSignal } from "solid-js";
 
-import { formatScore, type RankedPlayer } from "~/services/ranking";
+import { getRankingAlgorithmMetadata, type RankedPlayer } from "~/services/ranking";
+import type { RankingAlgorithm } from "~/types/app-state";
 import { BinIcon } from "./BinIcon";
 
 import "./RankingList.css";
 
 type RankingListProps = {
+  algorithm: RankingAlgorithm;
   onSelectPlayerHistory: (
     playerName: string,
     type: "all" | "losses" | "wins",
@@ -14,20 +16,13 @@ type RankingListProps = {
   onDeletePlayer?: (playerName: string) => void;
 };
 
-const getKFactorTitle = (player: RankedPlayer) => {
-  if (player.isInPlacement) {
-    return `Placement phase: ${player.matchCount}/10 matches played, K=${player.kFactor}`;
-  }
-
-  return `Veteran player: K=${player.kFactor}`;
-};
-
 export function RankingList(props: RankingListProps) {
   const [contextMenu, setContextMenu] = createSignal<{
     x: number;
     y: number;
     playerName: string;
   } | null>(null);
+  const rankingMetadata = () => getRankingAlgorithmMetadata(props.algorithm);
 
   return (
     <Show
@@ -91,7 +86,7 @@ export function RankingList(props: RankingListProps) {
                   </div>
                   <div class="ranking-metrics">
                     <span class="ranking-score">
-                      {formatScore(player.score)} rating
+                      {rankingMetadata().formatScoreWithUnit(player.score)}
                     </span>
                   </div>
                 </div>

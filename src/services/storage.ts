@@ -1,8 +1,10 @@
 import {
+  DEFAULT_RANKING_ALGORITHM,
   createEmptyAppState,
   type AppState,
   type PlayedMatch,
   type Player,
+  type RankingAlgorithm,
 } from "~/types/app-state";
 
 type LegacyPlayedMatch = {
@@ -30,7 +32,12 @@ const clonePlayedMatches = (playedMatches: PlayedMatch[]): PlayedMatch[] =>
 const cloneState = (state: AppState): AppState => ({
   players: clonePlayers(state.players),
   playedMatches: clonePlayedMatches(state.playedMatches),
+  rankingAlgorithm: state.rankingAlgorithm,
 });
+
+const isRankingAlgorithm = (
+  value: unknown,
+): value is RankingAlgorithm => value === "elo" || value === "percent-won";
 
 const isPlayer = (value: unknown): value is Player =>
   typeof value === "object" &&
@@ -90,7 +97,9 @@ const isAppState = (value: unknown): value is AppState =>
   value.players.every(isPlayer) &&
   "playedMatches" in value &&
   Array.isArray(value.playedMatches) &&
-  value.playedMatches.every(isAnyPlayedMatch);
+  value.playedMatches.every(isAnyPlayedMatch) &&
+  (!("rankingAlgorithm" in value) ||
+    isRankingAlgorithm(value.rankingAlgorithm));
 
 export function createLocalAppStorage(
   storageKey = "darts-ranking/app-state",
@@ -114,6 +123,8 @@ export function createLocalAppStorage(
           memoryState = cloneState({
             players: parsedState.players,
             playedMatches: parsedState.playedMatches.map(normalizePlayedMatch),
+            rankingAlgorithm:
+              parsedState.rankingAlgorithm ?? DEFAULT_RANKING_ALGORITHM,
           });
         }
       } catch {
