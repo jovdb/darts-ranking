@@ -401,7 +401,7 @@ const collectEloProgress = (
   };
 };
 
-export function calculateEloRankings(
+export function calculateRankings(
   players: Player[],
   playedMatches: PlayedMatch[],
   asOf = new Date(),

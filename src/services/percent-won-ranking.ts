@@ -303,7 +303,7 @@ const toRankingTimelineSnapshot = (
   };
 };
 
-export function calculatePercentWonRankings(
+export function calculateRankings(
   players: Player[],
   playedMatches: PlayedMatch[],
   asOf = new Date(),

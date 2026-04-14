@@ -1,11 +1,11 @@
 import {
   calculateEloHistoricalMatches,
-  calculateEloRankings,
+  calculateRankings as calculateEloRankings,
   calculateEloRankingTimeline,
 } from "~/services/elo-scoring";
 import {
   calculatePercentWonHistoricalMatches,
-  calculatePercentWonRankings,
+  calculateRankings as calculatePercentWonRankings,
   calculatePercentWonRankingTimeline,
 } from "~/services/percent-won-ranking";
 import {
