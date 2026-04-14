@@ -494,7 +494,7 @@ export const getEloRatingChangeTooltip = (
 export class EloRankingAlgorithmService implements IRankingAlgorithmService {
   readonly algorithm = "elo" as const;
   readonly initialScore = DEFAULT_ELO_RATING;
-  readonly label = "ELO ranking";
+  readonly label = "ELO rating";
 
   formatScore(score: number): string {
     return String(Math.round(score));

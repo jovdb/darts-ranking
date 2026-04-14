@@ -14,7 +14,7 @@ This will be a Solid Start application to start darts games with opponents and c
 ## UI Parts
 
 - Main part is player ranking with scores.
-  - A scoring-algorithm combobox should let the user switch between `ELO ranking` and `Percent won`.
+  - A scoring-algorithm combobox should let the user switch between `ELO rating` and `Percent won`.
   - Changing the scoring algorithm should update both the ranking list and the ranking graph.
   - A ranking graph section should show Elo rating over time.
   - The ranking graph should show rating vertically.

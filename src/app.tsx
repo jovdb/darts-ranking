@@ -313,7 +313,7 @@ export default function App() {
                   }
                 >
                   <option value="percent-won">Percent won</option>
-                  <option value="elo">ELO ranking</option>
+                  <option value="elo">ELO rating</option>
                   <option value="trueskill">TrueSkill v2</option>
                 </select>
               </label>
