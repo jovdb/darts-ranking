@@ -1,6 +1,9 @@
 import { For, Show, createSignal } from "solid-js";
 
-import { getRankingAlgorithmMetadata, type RankedPlayer } from "~/services/ranking";
+import {
+  getRankingAlgorithmService,
+  type RankedPlayer,
+} from "~/services/ranking";
 import type { RankingAlgorithm } from "~/types/app-state";
 import { BinIcon } from "./BinIcon";
 
@@ -22,7 +25,7 @@ export function RankingList(props: RankingListProps) {
     y: number;
     playerName: string;
   } | null>(null);
-  const rankingMetadata = () => getRankingAlgorithmMetadata(props.algorithm);
+  const rankingService = () => getRankingAlgorithmService(props.algorithm);
 
   return (
     <Show
@@ -86,7 +89,7 @@ export function RankingList(props: RankingListProps) {
                   </div>
                   <div class="ranking-metrics">
                     <span class="ranking-score">
-                      {rankingMetadata().formatScoreWithUnit(player.score)}
+                      {rankingService().formatScoreWithUnit(player.score)}
                     </span>
                   </div>
                 </div>

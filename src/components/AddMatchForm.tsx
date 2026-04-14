@@ -1,7 +1,7 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
 import type { IRankingScorePreviewRow } from "~/services/ranking-interfaces";
 import {
-  getRankingAlgorithmMetadata,
+  getRankingAlgorithmService,
   type RankedPlayer,
   type PlayedMatch,
 } from "~/services/ranking";
@@ -23,11 +23,18 @@ const formatPlayerLabel = (
   player: RankedPlayer,
   rankingAlgorithm: RankingAlgorithm,
 ) => {
-  return getRankingAlgorithmMetadata(rankingAlgorithm).formatPlayerLabel(player);
+  return getRankingAlgorithmService(rankingAlgorithm).formatPlayerLabel(player);
 };
 
 const formatRatingChange = (value: number, rankingAlgorithm: RankingAlgorithm) => {
-  return getRankingAlgorithmMetadata(rankingAlgorithm).formatScoreChange(value);
+  return getRankingAlgorithmService(rankingAlgorithm).formatScoreChange(value);
+};
+
+const formatProjectedScore = (
+  value: number,
+  rankingAlgorithm: RankingAlgorithm,
+) => {
+  return getRankingAlgorithmService(rankingAlgorithm).formatScoreWithUnit(value);
 };
 
 export function AddMatchForm(props: AddMatchFormProps) {
@@ -58,7 +65,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
       return [];
     }
 
-    return getRankingAlgorithmMetadata(props.rankingAlgorithm).buildScoreChangePreviewRows(
+    return getRankingAlgorithmService(props.rankingAlgorithm).buildScoreChangePreviewRows(
+      props.players,
+      props.playedMatches,
       selectedPlayers(),
       winnerName(),
     );
@@ -145,7 +154,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
               >
                 <span>{formatPlayerLabel(player, props.rankingAlgorithm)}</span>
                 <span class="selected-player-expected-win">
-                  {getRankingAlgorithmMetadata(props.rankingAlgorithm).getExpectedWinPercentage(player, selectedPlayers())}% win chance
+                  {getRankingAlgorithmService(props.rankingAlgorithm).getExpectedWinPercentage(player, selectedPlayers())}% win chance
                 </span>
                 <Show when={winnerName() === player.name}>
                   <span class="selected-player-winner-tag">Winner</span>
@@ -201,14 +210,14 @@ export function AddMatchForm(props: AddMatchFormProps) {
       <Show when={winnerName() && ratingPreviewRows().length > 0}>
         <fieldset class="winner-options">
           <legend class="field-label">
-            {getRankingAlgorithmMetadata(props.rankingAlgorithm).getScoreChangePreviewTitle()}
+            {getRankingAlgorithmService(props.rankingAlgorithm).getScoreChangePreviewTitle()}
           </legend>
           <ul class="winner-preview-list">
             <For each={ratingPreviewRows()}>
               {(row) => (
                 <li
                   class="winner-preview-item"
-                  title={getRankingAlgorithmMetadata(props.rankingAlgorithm).getScoreChangePreviewTooltip(
+                  title={getRankingAlgorithmService(props.rankingAlgorithm).getScoreChangePreviewTooltip(
                     row.label,
                     winnerName(),
                     selectedPlayers(),
@@ -222,9 +231,11 @@ export function AddMatchForm(props: AddMatchFormProps) {
                       "is-positive": row.tone === "positive",
                     }}
                   >
-                    {row.scoreChange === null
+                    {row.projectedScore === null
                       ? ""
-                      : formatRatingChange(row.scoreChange, props.rankingAlgorithm)}
+                      : row.scoreChange === null
+                        ? `-> ${formatProjectedScore(row.projectedScore, props.rankingAlgorithm)}`
+                        : `${formatRatingChange(row.scoreChange, props.rankingAlgorithm)} -> ${formatProjectedScore(row.projectedScore, props.rankingAlgorithm)}`}
                   </span>
                 </li>
               )}

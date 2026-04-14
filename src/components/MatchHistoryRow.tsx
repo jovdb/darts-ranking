@@ -1,5 +1,5 @@
 import {
-  getRankingAlgorithmMetadata,
+  getRankingAlgorithmService,
   type HistoricalMatch,
 } from "~/services/ranking";
 import type { RankingAlgorithm } from "~/types/app-state";
@@ -28,17 +28,25 @@ const formatMatchDate = (value: string) => {
 };
 
 const formatHistoricalPlayerLabel = (player: {
+  matchCount: number;
   score: number;
   name: string;
   rank: number;
 }, rankingAlgorithm: RankingAlgorithm) => {
-  return getRankingAlgorithmMetadata(rankingAlgorithm).formatHistoryPlayerLabel(
-    player,
+  return getRankingAlgorithmService(rankingAlgorithm).formatHistoryPlayerLabel(
+    {
+      losses: 0,
+      matchCount: player.matchCount,
+      name: player.name,
+      rank: player.rank,
+      score: player.score,
+      wins: 0,
+    },
   );
 };
 
 export function MatchHistoryRow(props: MatchHistoryRowProps) {
-  const rankingMetadata = () => getRankingAlgorithmMetadata(props.rankingAlgorithm);
+  const rankingService = () => getRankingAlgorithmService(props.rankingAlgorithm);
 
   const focusedPlayerWon = () => {
     return props.match.winningPlayer.name === props.focusedPlayerName;
@@ -52,11 +60,11 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
   };
   const pointsDetail = () => {
     if (!props.focusedPlayerName) {
-      return rankingMetadata().formatHistoryChange(props.match.earnedPoints);
+      return rankingService().formatHistoryChange(props.match.earnedPoints);
     }
 
     if (focusedPlayerWon()) {
-      return rankingMetadata().formatHistoryChange(props.match.earnedPoints);
+      return rankingService().formatHistoryChange(props.match.earnedPoints);
     }
 
     // Find the focused player's rating change if they're a loser
@@ -64,12 +72,12 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
       (player) => player.name === props.focusedPlayerName,
     );
     if (focusedPlayerIndex >= 0) {
-      return rankingMetadata().formatHistoryChange(
+      return rankingService().formatHistoryChange(
         props.match.losingPlayerRatingChanges[focusedPlayerIndex],
       );
     }
 
-    return rankingMetadata().formatHistoryChange(props.match.earnedPoints);
+    return rankingService().formatHistoryChange(props.match.earnedPoints);
   };
   const shouldShowTotal = () => {
     if (!props.focusedPlayerName) {
@@ -115,7 +123,7 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
         </div>
         {shouldShowTotal() ? (
           <span class="match-history-points-total">
-            total: {rankingMetadata().formatHistoryTotal(props.match.winnerTotalScore)}
+            total: {rankingService().formatHistoryTotal(props.match.winnerTotalScore)}
           </span>
         ) : null}
       </div>

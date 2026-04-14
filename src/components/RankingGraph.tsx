@@ -1,7 +1,7 @@
 import { For, Show, createMemo, createSignal, createEffect } from "solid-js";
 
 import {
-  getRankingAlgorithmMetadata,
+  getRankingAlgorithmService,
   type RankedPlayer,
   type RankingTimelineSnapshot,
 } from "~/services/ranking";
@@ -110,7 +110,7 @@ export function RankingGraph(props: RankingGraphProps) {
     matchIndex: number;
   } | null>(null);
   const [timespanFilter, setTimespanFilter] = createSignal<"day" | "week" | "month" | "all">("all");
-  const rankingMetadata = () => getRankingAlgorithmMetadata(props.algorithm);
+  const rankingService = () => getRankingAlgorithmService(props.algorithm);
 
   const plotWidth = CHART_WIDTH - CHART_PADDING.left - CHART_PADDING.right;
   const plotHeight = CHART_HEIGHT - CHART_PADDING.top - CHART_PADDING.bottom;
@@ -144,7 +144,7 @@ export function RankingGraph(props: RankingGraphProps) {
 
   const scoreRange = createMemo(() => {
     const allScores = [
-      rankingMetadata().initialScore,
+      rankingService().initialScore,
       ...props.rankings.map((ranking) => ranking.score),
       ...filteredTimeline().flatMap((snapshot) => {
         return snapshot.rankings.map((ranking) => ranking.score);
@@ -180,12 +180,12 @@ export function RankingGraph(props: RankingGraphProps) {
           matchIndex: -1,
           playerName: player.name,
           rank: startingRank,
-          score: rankingMetadata().initialScore,
+          score: rankingService().initialScore,
           x: CHART_PADDING.left,
           y:
             CHART_PADDING.top +
             plotHeight -
-            ((rankingMetadata().initialScore - scoreRange().min) /
+            ((rankingService().initialScore - scoreRange().min) /
               (scoreRange().max - scoreRange().min || 1)) *
               plotHeight,
         },
@@ -202,7 +202,7 @@ export function RankingGraph(props: RankingGraphProps) {
             matchCount: 0,
             name: player.name,
             rank: startingRank,
-            score: rankingMetadata().initialScore,
+            score: rankingService().initialScore,
             wins: 0,
           };
           const normalizedScore =
@@ -250,7 +250,7 @@ export function RankingGraph(props: RankingGraphProps) {
           (currentScoreRange.max - currentScoreRange.min || 1);
 
         return {
-          label: rankingMetadata().formatAxisValue(value),
+          label: rankingService().formatAxisValue(value),
           value,
           y: CHART_PADDING.top + plotHeight - normalizedValue * plotHeight,
         };
@@ -301,7 +301,7 @@ export function RankingGraph(props: RankingGraphProps) {
           (player) => player.name === change.playerName,
         );
         const ratingBefore = playerBeforeMatch?.score ?? 0;
-        return rankingMetadata().formatGraphPlayerChange(
+        return rankingService().formatGraphPlayerChange(
           change.playerName,
           ratingBefore,
           change.ratingChange,
@@ -313,7 +313,7 @@ export function RankingGraph(props: RankingGraphProps) {
         datePlayedGmt: snapshot.datePlayedGmt,
         matchIndex: snapshot.matchIndex,
         playerChanges,
-        summary: rankingMetadata().formatGraphMatchSummary(
+        summary: rankingService().formatGraphMatchSummary(
           snapshot.winningPlayer,
           snapshot.losingPlayers,
           snapshot.earnedPoints,
@@ -346,7 +346,7 @@ export function RankingGraph(props: RankingGraphProps) {
         <div>
           <h2>Ranking timeline</h2>
           <p class="card-copy">
-            {rankingMetadata().getGraphDescription()}
+            {rankingService().getGraphDescription()}
           </p>
         </div>
         <div class="ranking-graph-timespan-filter">
@@ -452,7 +452,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 text-anchor="middle"
                 transform={`translate(18 ${CHART_PADDING.top + plotHeight / 2}) rotate(-90)`}
               >
-                {rankingMetadata().getAxisTitle("y")}
+                {rankingService().getAxisTitle("y")}
               </text>
               <text
                 class="ranking-graph-axis-title"
@@ -640,7 +640,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 <span class="ranking-graph-legend-name">{series.name}</span>
                 <span class="ranking-graph-legend-meta">
                   #{series.latest?.rank ?? "-"} ·{" "}
-                  {rankingMetadata().formatScoreWithUnit(series.latest?.score ?? 0)}
+                  {rankingService().formatScoreWithUnit(series.latest?.score ?? 0)}
                 </span>
               </li>
             )}

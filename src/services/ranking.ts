@@ -1,15 +1,5 @@
 import {
-  calculateEloHistoricalMatches,
-  calculateRankings as calculateEloRankings,
-  calculateEloRankingTimeline,
-} from "~/services/elo-scoring";
-import {
-  calculatePercentWonHistoricalMatches,
-  calculateRankings as calculatePercentWonRankings,
-  calculatePercentWonRankingTimeline,
-} from "~/services/percent-won-ranking";
-import {
-  getRankingAlgorithmService,
+  getRankingAlgorithmService as resolveRankingAlgorithmService,
 } from "~/services/ranking-algorithm";
 import type { IRankingAlgorithmService } from "~/services/ranking-interfaces";
 import type { PlayedMatch, Player, RankingAlgorithm } from "~/types/app-state";
@@ -74,17 +64,17 @@ export type RankingTimelineSnapshot = {
   winningPlayer: string;
 };
 
-export const getRankingAlgorithmMetadata = (
+export const getRankingAlgorithmService = (
   algorithm: RankingAlgorithm,
 ): IRankingAlgorithmService => {
-  return getRankingAlgorithmService(algorithm);
+  return resolveRankingAlgorithmService(algorithm);
 };
 
 export const formatScore = (
   score: number,
   algorithm: RankingAlgorithm = "elo",
 ) => {
-  return getRankingAlgorithmMetadata(algorithm).formatScore(score);
+  return getRankingAlgorithmService(algorithm).formatScore(score);
 };
 
 export function calculateRankings(
@@ -93,11 +83,11 @@ export function calculateRankings(
   algorithm: RankingAlgorithm = "elo",
   asOf = new Date(),
 ): RankedPlayer[] {
-  if (algorithm === "percent-won") {
-    return calculatePercentWonRankings(players, playedMatches, asOf);
-  }
-
-  return calculateEloRankings(players, playedMatches, asOf);
+  return getRankingAlgorithmService(algorithm).calculateRankings(
+    players,
+    playedMatches,
+    asOf,
+  );
 }
 
 export function calculateHistoricalMatches(
@@ -105,11 +95,10 @@ export function calculateHistoricalMatches(
   playedMatches: PlayedMatch[],
   algorithm: RankingAlgorithm = "elo",
 ): HistoricalMatch[] {
-  if (algorithm === "percent-won") {
-    return calculatePercentWonHistoricalMatches(players, playedMatches);
-  }
-
-  return calculateEloHistoricalMatches(players, playedMatches);
+  return getRankingAlgorithmService(algorithm).calculateHistoricalMatches(
+    players,
+    playedMatches,
+  );
 }
 
 export function calculateRankingTimeline(
@@ -117,9 +106,8 @@ export function calculateRankingTimeline(
   playedMatches: PlayedMatch[],
   algorithm: RankingAlgorithm = "elo",
 ): RankingTimelineSnapshot[] {
-  if (algorithm === "percent-won") {
-    return calculatePercentWonRankingTimeline(players, playedMatches);
-  }
-
-  return calculateEloRankingTimeline(players, playedMatches);
+  return getRankingAlgorithmService(algorithm).calculateRankingTimeline(
+    players,
+    playedMatches,
+  );
 }

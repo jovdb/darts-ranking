@@ -1,4 +1,10 @@
 import type { RankingAlgorithm } from "~/types/app-state";
+import type { PlayedMatch, Player } from "~/types/app-state";
+import type {
+  HistoricalMatch,
+  RankedPlayer,
+  RankingTimelineSnapshot,
+} from "~/services/ranking";
 
 export interface IRankingPlayerLabel {
   losses: number;
@@ -11,8 +17,25 @@ export interface IRankingPlayerLabel {
 
 export interface IRankingScorePreviewRow {
   label: string;
+  projectedScore: number | null;
   scoreChange: number | null;
   tone: "negative" | "neutral" | "positive";
+}
+
+export interface IRankingAlgorithmCalculation {
+  calculateHistoricalMatches(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+  ): HistoricalMatch[];
+  calculateRankings(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+    asOf?: Date,
+  ): RankedPlayer[];
+  calculateRankingTimeline(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+  ): RankingTimelineSnapshot[];
 }
 
 export interface IRankingAlgorithmGeneral {
@@ -49,6 +72,8 @@ export interface IMatchHistoryRowAlgorithm {
 
 export interface IAddMatchAlgorithm {
   buildScoreChangePreviewRows(
+    players: Player[],
+    playedMatches: PlayedMatch[],
     selectedPlayers: IRankingPlayerLabel[],
     winnerName: string,
   ): IRankingScorePreviewRow[];
@@ -65,7 +90,8 @@ export interface IAddMatchAlgorithm {
 }
 
 export interface IRankingAlgorithmService
-  extends IRankingAlgorithmGeneral,
+  extends IRankingAlgorithmCalculation,
+    IRankingAlgorithmGeneral,
     IRankingAlgorithmGraph,
     IMatchHistoryRowAlgorithm,
     IAddMatchAlgorithm {}

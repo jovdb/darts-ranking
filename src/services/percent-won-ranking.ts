@@ -402,7 +402,31 @@ export class PercentWonRankingAlgorithmService
     return "Score change preview";
   }
 
+  calculateRankings(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+    asOf = new Date(),
+  ): RankedPlayer[] {
+    return calculateRankings(players, playedMatches, asOf);
+  }
+
+  calculateHistoricalMatches(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+  ): HistoricalMatch[] {
+    return calculatePercentWonHistoricalMatches(players, playedMatches);
+  }
+
+  calculateRankingTimeline(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+  ): RankingTimelineSnapshot[] {
+    return calculatePercentWonRankingTimeline(players, playedMatches);
+  }
+
   buildScoreChangePreviewRows(
+    players: Player[],
+    playedMatches: PlayedMatch[],
     selectedPlayers: IRankingPlayerLabel[],
     winnerName: string,
   ): IRankingScorePreviewRow[] {
@@ -410,22 +434,42 @@ export class PercentWonRankingAlgorithmService
       return [];
     }
 
-    return selectedPlayers.map((player) => {
-      if (player.name !== winnerName) {
-        return {
-          label: player.name,
-          scoreChange: null,
-          tone: "neutral",
-        };
-      }
+    const losingPlayers = selectedPlayers
+      .filter((selectedPlayer) => selectedPlayer.name !== winnerName)
+      .map((selectedPlayer) => selectedPlayer.name);
 
-      const currentScore = player.score;
-      const newScore = ((player.wins + 1) / (player.matchCount + 1)) * 100;
+    if (losingPlayers.length === 0) {
+      return [];
+    }
+
+    const playersForCalculation: Player[] = players.map((player) => ({
+      name: player.name,
+    }));
+    const baseRankings = this.calculateRankings(playersForCalculation, playedMatches);
+    const projectedRankings = this.calculateRankings(playersForCalculation, [
+      ...playedMatches,
+      {
+        datePlayedGmt: new Date().toISOString(),
+        losingPlayers,
+        winningPlayer: winnerName,
+      },
+    ]);
+
+    return selectedPlayers.map((selectedPlayer) => {
+      const currentScore =
+        baseRankings.find((player) => player.name === selectedPlayer.name)?.score ??
+        selectedPlayer.score;
+      const projectedScore =
+        projectedRankings.find((player) => player.name === selectedPlayer.name)
+          ?.score ?? currentScore;
+      const scoreChange = projectedScore - currentScore;
 
       return {
-        label: player.name,
-        scoreChange: newScore - currentScore,
-        tone: "positive",
+        label: selectedPlayer.name,
+        projectedScore,
+        scoreChange: scoreChange === 0 ? null : scoreChange,
+        tone:
+          scoreChange > 0 ? "positive" : scoreChange < 0 ? "negative" : "neutral",
       };
     });
   }

@@ -562,39 +562,76 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
     return "Rating change preview";
   }
 
+  calculateRankings(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+    asOf = new Date(),
+  ): RankedPlayer[] {
+    return calculateRankings(players, playedMatches, asOf);
+  }
+
+  calculateHistoricalMatches(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+  ): HistoricalMatch[] {
+    return calculateEloHistoricalMatches(players, playedMatches);
+  }
+
+  calculateRankingTimeline(
+    players: Player[],
+    playedMatches: PlayedMatch[],
+  ): RankingTimelineSnapshot[] {
+    return calculateEloRankingTimeline(players, playedMatches);
+  }
+
   buildScoreChangePreviewRows(
+    players: Player[],
+    playedMatches: PlayedMatch[],
     selectedPlayers: IRankingPlayerLabel[],
     winnerName: string,
   ): IRankingScorePreviewRow[] {
-    const winner = selectedPlayers.find(
-      (selectedPlayer) => selectedPlayer.name === winnerName,
-    );
-    const losers = selectedPlayers.filter(
-      (selectedPlayer) => selectedPlayer.name !== winnerName,
-    );
-
-    if (!winner || losers.length === 0) {
+    if (selectedPlayers.length < 2) {
       return [];
     }
 
-    const preview = calculateSoloTeamMatchPreview(winner, losers);
-    const rows: IRankingScorePreviewRow[] = [
+    const losingPlayers = selectedPlayers
+      .filter((selectedPlayer) => selectedPlayer.name !== winnerName)
+      .map((selectedPlayer) => selectedPlayer.name);
+
+    if (losingPlayers.length === 0) {
+      return [];
+    }
+
+    const playersForCalculation: Player[] = players.map((player) => ({
+      name: player.name,
+    }));
+    const baseRankings = this.calculateRankings(playersForCalculation, playedMatches);
+    const projectedRankings = this.calculateRankings(playersForCalculation, [
+      ...playedMatches,
       {
-        label: winnerName,
-        scoreChange: preview.soloRatingChange,
-        tone: "positive",
+        datePlayedGmt: new Date().toISOString(),
+        losingPlayers,
+        winningPlayer: winnerName,
       },
-    ];
+    ]);
 
-    losers.forEach((loser, loserIndex) => {
-      rows.push({
-        label: loser.name,
-        scoreChange: preview.losingPlayerChanges[loserIndex] ?? 0,
-        tone: "negative",
-      });
+    return selectedPlayers.map((selectedPlayer) => {
+      const currentScore =
+        baseRankings.find((player) => player.name === selectedPlayer.name)?.score ??
+        selectedPlayer.score;
+      const projectedScore =
+        projectedRankings.find((player) => player.name === selectedPlayer.name)
+          ?.score ?? currentScore;
+      const scoreChange = projectedScore - currentScore;
+
+      return {
+        label: selectedPlayer.name,
+        projectedScore,
+        scoreChange,
+        tone:
+          scoreChange > 0 ? "positive" : scoreChange < 0 ? "negative" : "neutral",
+      };
     });
-
-    return rows;
   }
 
   getExpectedWinPercentage(
