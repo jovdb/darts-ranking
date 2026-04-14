@@ -219,7 +219,7 @@ const buildRankingsFromTotals = (
   const sortedPlayers = [...totalsByPlayerName.values()]
     .map((player) => ({
       isInPlacement: player.matchCount < 10,
-      kFactor: getKFactor(player.matchCount),
+      uncertainty: getKFactor(player.matchCount),
       losses: player.losses,
       matchCount: player.matchCount,
       name: player.name,
@@ -263,7 +263,7 @@ const getHistoricalMatchPlayer = (
   if (!rankedPlayer) {
     return {
       isInPlacement: true,
-      kFactor: getKFactor(0),
+      uncertainty: getKFactor(0),
       matchCount: 0,
       name: playerName,
       rank: 0,
@@ -273,7 +273,7 @@ const getHistoricalMatchPlayer = (
 
   return {
     isInPlacement: rankedPlayer.isInPlacement,
-    kFactor: rankedPlayer.kFactor,
+    uncertainty: rankedPlayer.uncertainty,
     matchCount: rankedPlayer.matchCount,
     name: rankedPlayer.name,
     rank: rankedPlayer.rank,

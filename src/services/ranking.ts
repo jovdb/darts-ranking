@@ -9,7 +9,7 @@ export type { PlayedMatch } from "~/types/app-state";
 
 export type RankedPlayer = {
   isInPlacement: boolean;
-  kFactor: number;
+  uncertainty: number;
   losses: number;
   matchCount: number;
   name: string;
@@ -20,7 +20,7 @@ export type RankedPlayer = {
 
 export type HistoricalMatchPlayer = {
   isInPlacement: boolean;
-  kFactor: number;
+  uncertainty: number;
   matchCount: number;
   name: string;
   rank: number;

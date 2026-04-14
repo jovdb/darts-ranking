@@ -197,7 +197,7 @@ export function RankingGraph(props: RankingGraphProps) {
             (rankedPlayer) => rankedPlayer.name === player.name,
           ) ?? {
             isInPlacement: true,
-            kFactor: 60,
+            uncertainty: 0,
             losses: 0,
             matchCount: 0,
             name: player.name,

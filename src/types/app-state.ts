@@ -2,7 +2,7 @@ export type Player = {
   name: string;
 };
 
-export type RankingAlgorithm = "elo" | "percent-won";
+export type RankingAlgorithm = "elo" | "percent-won" | "trueskill";
 
 export const DEFAULT_RANKING_ALGORITHM: RankingAlgorithm = "elo";
 

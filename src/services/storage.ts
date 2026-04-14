@@ -37,7 +37,7 @@ const cloneState = (state: AppState): AppState => ({
 
 const isRankingAlgorithm = (
   value: unknown,
-): value is RankingAlgorithm => value === "elo" || value === "percent-won";
+): value is RankingAlgorithm => value === "elo" || value === "percent-won" || value === "trueskill";
 
 const isPlayer = (value: unknown): value is Player =>
   typeof value === "object" &&
