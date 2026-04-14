@@ -1,5 +1,6 @@
 import type {
   IRankingAlgorithmService,
+  RankingScorePreviewRow,
   RankingPlayerLabel,
 } from "~/services/ranking-algorithm";
 import type { PlayedMatch, Player } from "~/types/app-state";
@@ -559,5 +560,55 @@ export class EloRankingAlgorithmService implements IRankingAlgorithmService {
 
   getScoreChangePreviewTitle(): string {
     return "Rating change preview";
+  }
+
+  buildScoreChangePreviewRows(
+    selectedPlayers: RankingPlayerLabel[],
+    winnerName: string,
+  ): RankingScorePreviewRow[] {
+    const winner = selectedPlayers.find(
+      (selectedPlayer) => selectedPlayer.name === winnerName,
+    );
+    const losers = selectedPlayers.filter(
+      (selectedPlayer) => selectedPlayer.name !== winnerName,
+    );
+
+    if (!winner || losers.length === 0) {
+      return [];
+    }
+
+    const preview = calculateSoloTeamMatchPreview(winner, losers);
+    const rows: RankingScorePreviewRow[] = [
+      {
+        label: winnerName,
+        scoreChange: preview.soloRatingChange,
+        tone: "positive",
+      },
+    ];
+
+    losers.forEach((loser, loserIndex) => {
+      rows.push({
+        label: loser.name,
+        scoreChange: preview.losingPlayerChanges[loserIndex] ?? 0,
+        tone: "negative",
+      });
+    });
+
+    return rows;
+  }
+
+  getExpectedWinPercentage(
+    player: RankingPlayerLabel,
+    selectedPlayers: RankingPlayerLabel[],
+  ): number {
+    return calculateEloExpectedWinPercentage(player, selectedPlayers);
+  }
+
+  getScoreChangePreviewTooltip(
+    playerName: string,
+    winnerName: string,
+    selectedPlayers: RankingPlayerLabel[],
+  ): string {
+    return getEloRatingChangeTooltip(playerName, winnerName, selectedPlayers);
   }
 }

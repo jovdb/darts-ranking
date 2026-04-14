@@ -1,6 +1,7 @@
 import type { PlayedMatch, Player } from "~/types/app-state";
 import type {
   IRankingAlgorithmService,
+  RankingScorePreviewRow,
   RankingPlayerLabel,
 } from "~/services/ranking-algorithm";
 import type {
@@ -342,7 +343,7 @@ export class PercentWonRankingAlgorithmService
   formatScoreChange(score: number): string {
     const prefix = score >= 0 ? "+" : "";
 
-    return `${prefix}${Math.round(score)} %`;
+    return `${prefix}${Math.round(score)}%`;
   }
 
   formatScoreWithUnit(score: number): string {
@@ -399,5 +400,68 @@ export class PercentWonRankingAlgorithmService
 
   getScoreChangePreviewTitle(): string {
     return "Score change preview";
+  }
+
+  buildScoreChangePreviewRows(
+    selectedPlayers: RankingPlayerLabel[],
+    winnerName: string,
+  ): RankingScorePreviewRow[] {
+    if (selectedPlayers.length < 2) {
+      return [];
+    }
+
+    return selectedPlayers.map((player) => {
+      if (player.name !== winnerName) {
+        return {
+          label: player.name,
+          scoreChange: null,
+          tone: "neutral",
+        };
+      }
+
+      const currentScore = player.score;
+      const newScore = ((player.wins + 1) / (player.matchCount + 1)) * 100;
+
+      return {
+        label: player.name,
+        scoreChange: newScore - currentScore,
+        tone: "positive",
+      };
+    });
+  }
+
+  getExpectedWinPercentage(
+    player: RankingPlayerLabel,
+    selectedPlayers: RankingPlayerLabel[],
+  ): number {
+    if (selectedPlayers.length < 2) {
+      return 0;
+    }
+
+    return Math.round(player.score);
+  }
+
+  getScoreChangePreviewTooltip(
+    playerName: string,
+    winnerName: string,
+    selectedPlayers: RankingPlayerLabel[],
+  ): string {
+    if (playerName !== winnerName) {
+      return "";
+    }
+
+    const winner = selectedPlayers.find(
+      (selectedPlayer) => selectedPlayer.name === winnerName,
+    );
+
+    if (!winner) {
+      return "";
+    }
+
+    const currentScore = winner.score;
+    const nextScore = ((winner.wins + 1) / (winner.matchCount + 1)) * 100;
+    const delta = nextScore - currentScore;
+
+    return `${winner.name}: ${this.formatScore(currentScore)} -> ${this.formatScore(nextScore)} (${this.formatScoreChange(delta)})`;
   }
 }

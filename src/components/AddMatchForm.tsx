@@ -1,9 +1,5 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
-import {
-  calculateEloExpectedWinPercentage,
-  getEloRatingChangeTooltip,
-  calculateSoloTeamMatchPreview,
-} from "~/services/elo-scoring";
+import type { RankingScorePreviewRow } from "~/services/ranking-algorithm";
 import {
   getRankingAlgorithmMetadata,
   type RankedPlayer,
@@ -21,12 +17,6 @@ type AddMatchFormProps = {
   players: RankedPlayer[];
   playedMatches: PlayedMatch[];
   rankingAlgorithm: RankingAlgorithm;
-};
-
-type RatingPreviewRow = {
-  label: string;
-  ratingChange: number;
-  tone: "negative" | "positive";
 };
 
 const formatPlayerLabel = (
@@ -63,50 +53,15 @@ export function AddMatchForm(props: AddMatchFormProps) {
     return props.players.filter((player) => !selectedNames.has(player.name));
   });
 
-  const matchPreview = createMemo(() => {
-    const selectedWinner = findPlayer(winnerName());
-    const losingPlayers = selectedPlayers().filter(
-      (player) => player.name !== winnerName(),
-    );
-
-    if (!selectedWinner || losingPlayers.length === 0) {
-      return null;
-    }
-
-    return calculateSoloTeamMatchPreview(selectedWinner, losingPlayers);
-  });
-
-  const ratingPreviewRows = createMemo<RatingPreviewRow[]>(() => {
-    const preview = matchPreview();
-
-    if (!preview) {
+  const ratingPreviewRows = createMemo<RankingScorePreviewRow[]>(() => {
+    if (!winnerName()) {
       return [];
     }
 
-    const rows: RatingPreviewRow[] = [
-      {
-        label: winnerName(),
-        ratingChange: preview.soloRatingChange,
-        tone: "positive",
-      },
-    ];
-
-    let losingPlayerIndex = 0;
-
-    selectedPlayers().forEach((player) => {
-      if (player.name === winnerName()) {
-        return;
-      }
-
-      rows.push({
-        label: player.name,
-        ratingChange: preview.losingPlayerChanges[losingPlayerIndex] ?? 0,
-        tone: "negative",
-      });
-      losingPlayerIndex += 1;
-    });
-
-    return rows;
+    return getRankingAlgorithmMetadata(props.rankingAlgorithm).buildScoreChangePreviewRows(
+      selectedPlayers(),
+      winnerName(),
+    );
   });
 
   const canConfirmMatch = createMemo(() => {
@@ -190,7 +145,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
               >
                 <span>{formatPlayerLabel(player, props.rankingAlgorithm)}</span>
                 <span class="selected-player-expected-win">
-                  {calculateEloExpectedWinPercentage(player, selectedPlayers())}% win chance
+                  {getRankingAlgorithmMetadata(props.rankingAlgorithm).getExpectedWinPercentage(player, selectedPlayers())}% win chance
                 </span>
                 <Show when={winnerName() === player.name}>
                   <span class="selected-player-winner-tag">Winner</span>
@@ -243,7 +198,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
         </div>
       </div>
 
-      <Show when={winnerName() && matchPreview()}>
+      <Show when={winnerName() && ratingPreviewRows().length > 0}>
         <fieldset class="winner-options">
           <legend class="field-label">
             {getRankingAlgorithmMetadata(props.rankingAlgorithm).getScoreChangePreviewTitle()}
@@ -253,7 +208,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
               {(row) => (
                 <li
                   class="winner-preview-item"
-                  title={getEloRatingChangeTooltip(
+                  title={getRankingAlgorithmMetadata(props.rankingAlgorithm).getScoreChangePreviewTooltip(
                     row.label,
                     winnerName(),
                     selectedPlayers(),
@@ -267,7 +222,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
                       "is-positive": row.tone === "positive",
                     }}
                   >
-                    {formatRatingChange(row.ratingChange, props.rankingAlgorithm)}
+                    {row.scoreChange === null
+                      ? ""
+                      : formatRatingChange(row.scoreChange, props.rankingAlgorithm)}
                   </span>
                 </li>
               )}

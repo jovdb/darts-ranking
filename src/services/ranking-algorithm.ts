@@ -3,9 +3,18 @@ import { PercentWonRankingAlgorithmService } from "~/services/percent-won-rankin
 import type { RankingAlgorithm } from "~/types/app-state";
 
 export type RankingPlayerLabel = {
+  losses: number;
+  matchCount: number;
   name: string;
   rank: number;
   score: number;
+  wins: number;
+};
+
+export type RankingScorePreviewRow = {
+  label: string;
+  scoreChange: number | null;
+  tone: "negative" | "neutral" | "positive";
 };
 
 export interface IRankingAlgorithmGeneral {
@@ -41,6 +50,19 @@ export interface IMatchHistoryRowAlgorithm {
 }
 
 export interface IAddMatchAlgorithm {
+  buildScoreChangePreviewRows(
+    selectedPlayers: RankingPlayerLabel[],
+    winnerName: string,
+  ): RankingScorePreviewRow[];
+  getExpectedWinPercentage(
+    player: RankingPlayerLabel,
+    selectedPlayers: RankingPlayerLabel[],
+  ): number;
+  getScoreChangePreviewTooltip(
+    playerName: string,
+    winnerName: string,
+    selectedPlayers: RankingPlayerLabel[],
+  ): string;
   getScoreChangePreviewTitle(): string;
 }
 
