@@ -10,6 +10,10 @@ import {
   calculatePercentWonRankings,
   calculatePercentWonRankingTimeline,
 } from "~/services/percent-won-ranking";
+import {
+  getRankingAlgorithmService,
+  type IRankingAlgorithmService,
+} from "~/services/ranking-algorithm";
 
 const rankingTieBreakers = new Map<string, number>();
 
@@ -86,59 +90,6 @@ type PreparedMatch = {
   match: PlayedMatch;
   playedAt: Date;
   sourceIndex: number;
-};
-
-export type RankingAlgorithmMetadata = {
-  algorithm: RankingAlgorithm;
-  formatScore: (score: number) => string;
-  formatScoreChange: (score: number) => string;
-  formatScoreWithUnit: (score: number) => string;
-  graphDescription: string;
-  graphYAxisLabel: string;
-  initialScore: number;
-  label: string;
-};
-
-const formatEloScore = (score: number) => {
-  return String(Math.round(score));
-};
-
-const formatPercentWonScore = (score: number) => {
-  return `${Math.round(score)}%`;
-};
-
-const RANKING_ALGORITHM_METADATA: Record<
-  RankingAlgorithm,
-  RankingAlgorithmMetadata
-> = {
-  elo: {
-    algorithm: "elo",
-    formatScore: formatEloScore,
-    formatScoreChange: (score) => {
-      const prefix = score >= 0 ? "+" : "";
-      return `${prefix}${formatEloScore(score)} rating`;
-    },
-    formatScoreWithUnit: (score) => `${formatEloScore(score)} rating`,
-    graphDescription:
-      "Elo rating progression by match step. The x-axis only advances when a match was played.",
-    graphYAxisLabel: "Rating",
-    initialScore: DEFAULT_ELO_RATING,
-    label: "ELO ranking",
-  },
-  "percent-won": {
-    algorithm: "percent-won",
-    formatScore: formatPercentWonScore,
-    formatScoreChange: (score) => {
-      const prefix = score >= 0 ? "+" : "";
-      return `${prefix}${Math.round(score)} pp`;
-    },
-    formatScoreWithUnit: (score) => `${formatPercentWonScore(score)} won`,
-    graphDescription:
-      "Percent won progression by match step. The x-axis only advances when a match was played.",
-    graphYAxisLabel: "Percent won",
-    initialScore: 0,
-    label: "Percent won",
-  },
 };
 
 const createPlayerTotalsByName = (players: Player[]) => {
@@ -423,8 +374,8 @@ export function* generateRankingProgress(
 
 export const getRankingAlgorithmMetadata = (
   algorithm: RankingAlgorithm,
-): RankingAlgorithmMetadata => {
-  return RANKING_ALGORITHM_METADATA[algorithm];
+): IRankingAlgorithmService => {
+  return getRankingAlgorithmService(algorithm);
 };
 
 export const formatScore = (

@@ -5,7 +5,6 @@ import {
   calculateExpectedSoloScore,
 } from "~/services/elo-scoring";
 import {
-  formatScore,
   getRankingAlgorithmMetadata,
   type RankedPlayer,
   type PlayedMatch,
@@ -34,7 +33,7 @@ const formatPlayerLabel = (
   player: RankedPlayer,
   rankingAlgorithm: RankingAlgorithm,
 ) => {
-  return `#${player.rank} ${player.name} (${getRankingAlgorithmMetadata(rankingAlgorithm).formatScoreWithUnit(player.score)})`;
+  return getRankingAlgorithmMetadata(rankingAlgorithm).formatPlayerLabel(player);
 };
 
 const calculateExpectedWinPercentage = (player: RankedPlayer, allPlayers: RankedPlayer[]) => {
@@ -50,10 +49,8 @@ const calculateExpectedWinPercentage = (player: RankedPlayer, allPlayers: Ranked
   return Math.round(averageExpectedScore * 100);
 };
 
-const formatRatingChange = (value: number) => {
-  const prefix = value >= 0 ? "+" : "";
-
-  return `${prefix}${formatScore(value)} rating`;
+const formatRatingChange = (value: number, rankingAlgorithm: RankingAlgorithm) => {
+  return getRankingAlgorithmMetadata(rankingAlgorithm).formatScoreChange(value);
 };
 
 const getRatingChangeTooltip = (
@@ -295,7 +292,9 @@ export function AddMatchForm(props: AddMatchFormProps) {
 
       <Show when={winnerName() && matchPreview()}>
         <fieldset class="winner-options">
-          <legend class="field-label">Rating change preview</legend>
+          <legend class="field-label">
+            {getRankingAlgorithmMetadata(props.rankingAlgorithm).getScoreChangePreviewTitle()}
+          </legend>
           <ul class="winner-preview-list">
             <For each={ratingPreviewRows()}>
               {(row) => (
@@ -315,7 +314,7 @@ export function AddMatchForm(props: AddMatchFormProps) {
                       "is-positive": row.tone === "positive",
                     }}
                   >
-                    {formatRatingChange(row.ratingChange)}
+                    {formatRatingChange(row.ratingChange, props.rankingAlgorithm)}
                   </span>
                 </li>
               )}

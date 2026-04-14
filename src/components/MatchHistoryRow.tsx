@@ -32,7 +32,9 @@ const formatHistoricalPlayerLabel = (player: {
   name: string;
   rank: number;
 }, rankingAlgorithm: RankingAlgorithm) => {
-  return `#${player.rank} ${player.name} (${getRankingAlgorithmMetadata(rankingAlgorithm).formatScoreWithUnit(player.score)})`;
+  return getRankingAlgorithmMetadata(rankingAlgorithm).formatHistoryPlayerLabel(
+    player,
+  );
 };
 
 export function MatchHistoryRow(props: MatchHistoryRowProps) {
@@ -50,11 +52,11 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
   };
   const pointsDetail = () => {
     if (!props.focusedPlayerName) {
-      return rankingMetadata().formatScoreChange(props.match.earnedPoints);
+      return rankingMetadata().formatHistoryChange(props.match.earnedPoints);
     }
 
     if (focusedPlayerWon()) {
-      return rankingMetadata().formatScoreChange(props.match.earnedPoints);
+      return rankingMetadata().formatHistoryChange(props.match.earnedPoints);
     }
 
     // Find the focused player's rating change if they're a loser
@@ -62,12 +64,12 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
       (player) => player.name === props.focusedPlayerName,
     );
     if (focusedPlayerIndex >= 0) {
-      return rankingMetadata().formatScoreChange(
+      return rankingMetadata().formatHistoryChange(
         props.match.losingPlayerRatingChanges[focusedPlayerIndex],
       );
     }
 
-    return rankingMetadata().formatScoreChange(props.match.earnedPoints);
+    return rankingMetadata().formatHistoryChange(props.match.earnedPoints);
   };
   const shouldShowTotal = () => {
     if (!props.focusedPlayerName) {
@@ -113,7 +115,7 @@ export function MatchHistoryRow(props: MatchHistoryRowProps) {
         </div>
         {shouldShowTotal() ? (
           <span class="match-history-points-total">
-            total: {rankingMetadata().formatScoreWithUnit(props.match.winnerTotalScore)}
+            total: {rankingMetadata().formatHistoryTotal(props.match.winnerTotalScore)}
           </span>
         ) : null}
       </div>

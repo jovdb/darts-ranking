@@ -250,7 +250,7 @@ export function RankingGraph(props: RankingGraphProps) {
           (currentScoreRange.max - currentScoreRange.min || 1);
 
         return {
-          label: rankingMetadata().formatScore(value),
+          label: rankingMetadata().formatAxisValue(value),
           value,
           y: CHART_PADDING.top + plotHeight - normalizedValue * plotHeight,
         };
@@ -301,7 +301,11 @@ export function RankingGraph(props: RankingGraphProps) {
           (player) => player.name === change.playerName,
         );
         const ratingBefore = playerBeforeMatch?.score ?? 0;
-        return `${change.playerName}: ${rankingMetadata().formatScoreWithUnit(ratingBefore)}, ${rankingMetadata().formatScoreChange(change.ratingChange)}`;
+        return rankingMetadata().formatGraphPlayerChange(
+          change.playerName,
+          ratingBefore,
+          change.ratingChange,
+        );
       });
 
       return {
@@ -309,7 +313,11 @@ export function RankingGraph(props: RankingGraphProps) {
         datePlayedGmt: snapshot.datePlayedGmt,
         matchIndex: snapshot.matchIndex,
         playerChanges,
-        summary: `${snapshot.winningPlayer} beats ${snapshot.losingPlayers.join(", ")}: ${rankingMetadata().formatScoreChange(snapshot.earnedPoints)}`,
+        summary: rankingMetadata().formatGraphMatchSummary(
+          snapshot.winningPlayer,
+          snapshot.losingPlayers,
+          snapshot.earnedPoints,
+        ),
         width,
         x: currentX,
         xStart: previousX,
@@ -338,7 +346,7 @@ export function RankingGraph(props: RankingGraphProps) {
         <div>
           <h2>Ranking timeline</h2>
           <p class="card-copy">
-            {rankingMetadata().graphDescription}
+            {rankingMetadata().getGraphDescription()}
           </p>
         </div>
         <div class="ranking-graph-timespan-filter">
@@ -444,7 +452,7 @@ export function RankingGraph(props: RankingGraphProps) {
                 text-anchor="middle"
                 transform={`translate(18 ${CHART_PADDING.top + plotHeight / 2}) rotate(-90)`}
               >
-                {rankingMetadata().graphYAxisLabel}
+                {rankingMetadata().getAxisTitle("y")}
               </text>
               <text
                 class="ranking-graph-axis-title"
