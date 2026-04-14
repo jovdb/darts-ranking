@@ -1,5 +1,9 @@
 import type { PlayedMatch, Player } from "~/types/app-state";
 import type {
+  IRankingAlgorithmService,
+  RankingPlayerLabel,
+} from "~/services/ranking-algorithm";
+import type {
   HistoricalMatch,
   HistoricalMatchPlayer,
   RankedPlayer,
@@ -322,4 +326,78 @@ export function calculatePercentWonRankingTimeline(
   return collectProgress(players, playedMatches).matches.map(
     toRankingTimelineSnapshot,
   );
+}
+
+export class PercentWonRankingAlgorithmService
+  implements IRankingAlgorithmService
+{
+  readonly algorithm = "percent-won" as const;
+  readonly initialScore = 0;
+  readonly label = "Percent won";
+
+  formatScore(score: number): string {
+    return `${Math.round(score)}%`;
+  }
+
+  formatScoreChange(score: number): string {
+    const prefix = score >= 0 ? "+" : "";
+
+    return `${prefix}${Math.round(score)} %`;
+  }
+
+  formatScoreWithUnit(score: number): string {
+    return `${this.formatScore(score)} won`;
+  }
+
+  formatPlayerLabel(player: RankingPlayerLabel): string {
+    return `#${player.rank} ${player.name} (${this.formatScoreWithUnit(player.score)})`;
+  }
+
+  formatAxisValue(value: number): string {
+    return this.formatScore(value);
+  }
+
+  formatGraphMatchSummary(
+    winnerName: string,
+    losingPlayers: string[],
+    earnedScore: number,
+  ): string {
+    return `${winnerName} beats ${losingPlayers.join(", ")}: ${this.formatScoreChange(earnedScore)}`;
+  }
+
+  formatGraphPlayerChange(
+    playerName: string,
+    scoreBeforeMatch: number,
+    scoreChange: number,
+  ): string {
+    return `${playerName}: ${this.formatScoreWithUnit(scoreBeforeMatch)}, ${this.formatScoreChange(scoreChange)}`;
+  }
+
+  getAxisTitle(axis: "x" | "y"): string {
+    if (axis === "y") {
+      return "Percent won";
+    }
+
+    return "Matches played";
+  }
+
+  getGraphDescription(): string {
+    return "Percent won progression by match step. The x-axis only advances when a match was played.";
+  }
+
+  formatHistoryChange(scoreChange: number): string {
+    return this.formatScoreChange(scoreChange);
+  }
+
+  formatHistoryPlayerLabel(player: RankingPlayerLabel): string {
+    return this.formatPlayerLabel(player);
+  }
+
+  formatHistoryTotal(totalScore: number): string {
+    return this.formatScoreWithUnit(totalScore);
+  }
+
+  getScoreChangePreviewTitle(): string {
+    return "Score change preview";
+  }
 }
